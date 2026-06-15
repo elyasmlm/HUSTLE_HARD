@@ -47,8 +47,8 @@ public class InteractionSystem : MonoBehaviour
 
     void Interagir(GameObject objet)
     {
-        JeuHasard jeu = Object.FindFirstObjectByType<JeuHasard>();
-        if (jeu != null)
-            jeu.OuvrirMenu();
+        TicketGrattage ticket = Object.FindFirstObjectByType<TicketGrattage>();
+        if (ticket != null)
+            ticket.OuvrirPanneau();
     }
 }
