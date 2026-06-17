@@ -79,19 +79,21 @@ public class TicketGrattage : MonoBehaviour
 
     void AcheterTicket()
     {
-        // Vérifier si le joueur a assez d'argent (à connecter au GameManager plus tard)
-        // Pour l'instant on génère directement le ticket
+        if (GameManager.Instance.argent < PRIX_TICKET)
+        {
+            // TODO : afficher message "pas assez d'argent"
+            return;
+        }
 
-        boutonAcheter.interactable = false;
+        GameManager.Instance.RetirerArgent(PRIX_TICKET);
         boutonAcheter.gameObject.SetActive(false);
-
         GenererTicket();
     }
 
     void GenererTicket()
     {
         // 1. Tirer victoire ou défaite
-        bool victoire = Random.value < 0.33f;
+        bool victoire = Random.value < 0.25f;
 
         // 2. Tirer le gain potentiel
         gainPotentiel = TirerGain();
@@ -219,14 +221,16 @@ public class TicketGrattage : MonoBehaviour
 
         if (matches >= 2)
         {
-            texteResultat.text = "🎉 GAGNÉ ! +" + gainPotentiel + "$";
+            texteResultat.text = "GAGNÉ ! +" + gainPotentiel + "$";
             texteResultat.color = Color.green;
-            // TODO : GameManager.instance.AjouterArgent(gainPotentiel);
+            GameManager.Instance.AjouterArgent(gainPotentiel);
+            GameManager.Instance.AjouterFolie(5f);
         }
         else
         {
-            texteResultat.text = "😞 Perdu...";
+            texteResultat.text = "Perdu...";
             texteResultat.color = Color.red;
+            GameManager.Instance.AjouterFolie(2f);
         }
     }
 

@@ -30,14 +30,17 @@ public class HUDManager : MonoBehaviour
 
     void MettreAJourHUD()
     {
-        texteArgent.text = "$" + argent.ToString("N0");
+        if (GameManager.Instance == null) return;
 
-        int heures = Mathf.FloorToInt(tempsRestant / 60f);
-        int minutes = Mathf.FloorToInt(tempsRestant % 60f);
+        texteArgent.text = "$" + GameManager.Instance.argent.ToString("N0");
+
+        float t = GameManager.Instance.tempsRestant;
+        int heures = Mathf.FloorToInt(t / 60f);
+        int minutes = Mathf.FloorToInt(t % 60f);
         texteTimer.text = string.Format("{0:00}:{1:00}", heures, minutes);
+        texteTimer.color = t < 120f ? Color.red : Color.white;
 
-        texteTimer.color = tempsRestant < 120f ? Color.red : Color.white;
-
+        float folie = GameManager.Instance.folie;
         float largeur = (folie / 100f) * largeurMaxBarre;
         barreFolieFill.sizeDelta = new Vector2(largeur, barreFolieFill.sizeDelta.y);
         texteFolie.text = "Folie : " + Mathf.RoundToInt(folie) + "%";

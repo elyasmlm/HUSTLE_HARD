@@ -1,0 +1,288 @@
+{
+	"asset": {
+		"generator": "Unity 5.6.0f3",
+		"extras": {
+			"exporterVersion" : "2.0.5"
+		},
+		"version": "2.0"
+	},
+	"accessors": [
+		{
+			"bufferView": 2,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 1016,
+			"max": [ 0.510992, 1.069919, 2.007411 ],
+			"min": [ -1.852808, -1.069919, -1.48167 ],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 2,
+			"byteOffset": 12192,
+			"componentType": 5126,
+			"count": 1016,
+			"max": [ 0.9984396, 0.9890691, 0.9912002 ],
+			"min": [ -0.9939311, -0.9890691, -0.9135972 ],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 1,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 1016,
+			"max": [ 0.999866, 0.964862 ],
+			"min": [ 0.000134, 0.000134 ],
+			"type": "VEC2"
+		},
+		{
+			"bufferView": 3,
+			"byteOffset": 0,
+			"componentType": 5126,
+			"count": 1016,
+			"max": [ 1, 0.9983222, 0.9993517, 1 ],
+			"min": [ -0.9705985, -0.9983222, -0.9968544, -1 ],
+			"type": "VEC4"
+		},
+		{
+			"bufferView": 0,
+			"byteOffset": 0,
+			"componentType": 5123,
+			"count": 684,
+			"max": [ 493 ],
+			"min": [ 0 ],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 0,
+			"byteOffset": 1368,
+			"componentType": 5123,
+			"count": 300,
+			"max": [ 709 ],
+			"min": [ 494 ],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 0,
+			"byteOffset": 1968,
+			"componentType": 5123,
+			"count": 42,
+			"max": [ 747 ],
+			"min": [ 710 ],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 0,
+			"byteOffset": 2052,
+			"componentType": 5123,
+			"count": 30,
+			"max": [ 765 ],
+			"min": [ 748 ],
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 0,
+			"byteOffset": 2112,
+			"componentType": 5123,
+			"count": 330,
+			"max": [ 1015 ],
+			"min": [ 766 ],
+			"type": "SCALAR"
+		}
+	],
+	"buffers": [
+		{
+			"byteLength": 51540,
+			"uri": "Unity2Skfb.bin"
+		}
+	],
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 2772,
+			"byteOffset": 0,
+			"byteStride": 0,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 8128,
+			"byteOffset": 2772,
+			"byteStride": 8,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 24384,
+			"byteOffset": 10900,
+			"byteStride": 12,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 16256,
+			"byteOffset": 35284,
+			"byteStride": 16,
+			"target": 34962
+		}
+	],
+	"images": [
+		{
+			"uri": "Assets/chicken/chicken-texture.jpg"
+		}
+	],
+	"materials": [
+		{
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [0.8412, 0.8169, 0.7791, 1],
+				"baseColorTexture" : {
+					"index" : 0,
+					"texCoord" : 0
+				},
+				"roughnessFactor": 0.5,
+				"metallicFactor": 0
+			},
+			"doubleSided": false,
+			"emissiveFactor": [0, 0, 0],
+			"name": "feathers"
+		},
+		{
+			"extensions": {
+				"KHR_materials_pbrSpecularGlossiness": {
+					"baseColorFactor": [0.8308824, 0.2382677, 0.2403577, 1]				}
+
+			},
+			"doubleSided": false,
+			"name": "pale_red"
+		},
+		{
+			"extensions": {
+				"KHR_materials_pbrSpecularGlossiness": {
+					"baseColorFactor": [0.8, 0.617291, 0.02079997, 1]				}
+
+			},
+			"doubleSided": false,
+			"name": "gold"
+		},
+		{
+			"extensions": {
+				"KHR_materials_pbrSpecularGlossiness": {
+					"baseColorFactor": [0, 0, 0, 1]				}
+
+			},
+			"doubleSided": false,
+			"name": "black"
+		},
+		{
+			"extensions": {
+				"KHR_materials_pbrSpecularGlossiness": {
+					"baseColorFactor": [0.9117647, 0.7664914, 0.5497405, 1]				}
+
+			},
+			"doubleSided": false,
+			"name": "buttermilk"
+		}
+	],
+	"meshes": [
+		{
+			"name": "mesh_Chicken_9788chicken-texture",
+			"primitives": [
+				{
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2,
+						"TANGENT4": 3
+					},
+					"indices": 4,
+					"material": 0,
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2,
+						"TANGENT4": 3
+					},
+					"indices": 5,
+					"material": 1,
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2,
+						"TANGENT4": 3
+					},
+					"indices": 6,
+					"material": 2,
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2,
+						"TANGENT4": 3
+					},
+					"indices": 7,
+					"material": 3,
+					"mode": 4
+				},
+				{
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2,
+						"TANGENT4": 3
+					},
+					"indices": 8,
+					"material": 4,
+					"mode": 4
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"name": "UnityGlTF_correctionMatrix",
+			"children": [
+				1
+			],
+			"matrix": [-1, 0, -8.742278E-08, 0, 0, 1, 0, 0, 8.742278E-08, 0, -1, 0, 0, 0, 0, 1]
+		},
+		{
+			"name": "node_chicken-texture_-4072",
+			"mesh": 0,
+			"matrix": [1, 0, 0, 0, 0, -1.192093E-07, 1, 0, 0, -1, -1.192093E-07, 0, 3.029401, 2, -12.41302, 1]
+		}
+	],
+	"samplers": [
+		{
+			"magFilter": 9729,
+			"minFilter": 9985,
+			"wrapS": 10497,
+			"wrapT": 10497
+		}
+	],
+	"scenes": [
+		{
+			"name":"defaultScene",
+			"nodes": [
+				0
+			]
+		}
+	],
+	"scene": 0,
+	"textures": [
+		{
+			"format": 6408,
+			"internalFormat": 6408,
+			"sampler": 0,
+			"source": 0,
+			"target": 3553,
+			"type": 5121
+		}
+	]
+}

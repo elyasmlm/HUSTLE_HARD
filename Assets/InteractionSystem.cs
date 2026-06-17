@@ -47,8 +47,21 @@ public class InteractionSystem : MonoBehaviour
 
     void Interagir(GameObject objet)
     {
+        // Porte
+        PorteTransition porte = objet.GetComponent<PorteTransition>();
+        if (porte != null)
+        {
+            porte.Entrer();
+            return;
+        }
+
+        // Ticket grattage
         TicketGrattage ticket = Object.FindFirstObjectByType<TicketGrattage>();
         if (ticket != null)
             ticket.OuvrirPanneau();
+
+        // Objet interactif générique
+        ObjetInteractif obj = objet.GetComponent<ObjetInteractif>();
+        if (obj != null) { obj.Interagir(); return; }
     }
 }
