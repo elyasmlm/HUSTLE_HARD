@@ -17,7 +17,7 @@ public static class CreateMainMenuSceneEditor
     private static readonly Color PANEL_DARK      = new Color(0.06f, 0.06f, 0.09f, 0.97f);
     private static readonly Color BTN_NORMAL      = new Color(0f,    0f,    0f,    0f); 
     private static readonly Color TEXT_WHITE      = new Color(0.92f, 0.92f, 0.92f, 1f);
-    private static readonly Color TEXT_YELLOW     = new Color(0.82f, 0.06f, 0.06f, 1f);
+    private static readonly Color TEXT_RED     = new Color(0.82f, 0.06f, 0.06f, 1f);
     private static readonly Color SEPARATOR       = new Color(0.82f, 0.06f, 0.06f, 0.6f);
     private static readonly Color OVERLAY_COLOR   = new Color(0f,    0f,    0f,    0.55f);
 
@@ -36,6 +36,7 @@ public static class CreateMainMenuSceneEditor
         cam.backgroundColor = BG_DARK;
         cam.orthographic = false;
         cam.tag = "MainCamera";
+        cam.cullingMask = ~(1 << 31);
         camGO.AddComponent<AudioListener>();
 
         // ── EventSystem ────────────────────────────────────────────────────
@@ -87,7 +88,7 @@ public static class CreateMainMenuSceneEditor
 
         // Sous-titre (genre du jeu)
         var subLabel = CreateTMPText(mainButtonsPanel.transform, "SubLabel", "— HUSTLE HARD —",
-            28f, TEXT_YELLOW, TextAlignmentOptions.MidlineLeft);
+            28f, TEXT_RED, TextAlignmentOptions.MidlineLeft);
         var subRT = subLabel.GetComponent<RectTransform>();
         subRT.anchorMin = new Vector2(0f, 0.65f);
         subRT.anchorMax = new Vector2(1f, 0.72f);
@@ -125,7 +126,7 @@ public static class CreateMainMenuSceneEditor
 
         // Titre "HARD" (jaune)
         var titleBottom = CreateTMPText(rightColumn.transform, "TitleBottom", "HARD",
-            170f, TEXT_YELLOW, TextAlignmentOptions.Center);
+            170f, TEXT_RED, TextAlignmentOptions.Center);
         var tbRT = titleBottom.GetComponent<RectTransform>();
         tbRT.anchorMin = new Vector2(0f, 0.32f);
         tbRT.anchorMax = new Vector2(1f, 0.58f);
@@ -145,7 +146,7 @@ public static class CreateMainMenuSceneEditor
         optionsPanel.SetActive(false);
 
         var optTitle = CreateTMPText(optionsPanel.transform, "OptionsTitle", "OPTIONS",
-            48f, TEXT_YELLOW, TextAlignmentOptions.Center);
+            48f, TEXT_RED, TextAlignmentOptions.Center);
         var otRT = optTitle.GetComponent<RectTransform>();
         otRT.anchorMin = new Vector2(0f, 1f);
         otRT.anchorMax = new Vector2(1f, 1f);
@@ -158,29 +159,12 @@ public static class CreateMainMenuSceneEditor
         // Bouton Retour Options
         var optBackBtn = CreateMenuButton(optionsPanel.transform, "← RETOUR", 0.08f, 36f);
 
-        // ── Panneau SKIN ───────────────────────────────────────────────────
+        // ── Panneau SKIN ──────────────────────────────────────────────────────────────────────────────────────────────────────────
         var skinPanel = CreateDarkPanel(canvasGO.transform, "SkinPanel",
             new Vector2(0.02f, 0.1f), new Vector2(0.42f, 0.9f));
         skinPanel.SetActive(false);
 
-        var skinTitle = CreateTMPText(skinPanel.transform, "SkinTitle", "SÉLECTION SKIN",
-            42f, TEXT_YELLOW, TextAlignmentOptions.Center);
-        var stRT = skinTitle.GetComponent<RectTransform>();
-        stRT.anchorMin = new Vector2(0f, 1f);
-        stRT.anchorMax = new Vector2(1f, 1f);
-        stRT.pivot     = new Vector2(0.5f, 1f);
-        stRT.offsetMin = new Vector2(0f, -85f);
-        stRT.offsetMax = new Vector2(0f, -20f);
-
-        var comingSoon = CreateTMPText(skinPanel.transform, "ComingSoon",
-            "Sélection de skin\nbientôt disponible.",
-            32f, TEXT_WHITE, TextAlignmentOptions.Center);
-        var csRT = comingSoon.GetComponent<RectTransform>();
-        csRT.anchorMin = new Vector2(0.05f, 0.35f);
-        csRT.anchorMax = new Vector2(0.95f, 0.7f);
-        comingSoon.color = new Color(0.7f, 0.7f, 0.7f, 0.9f);
-
-        var skinBackBtn = CreateMenuButton(skinPanel.transform, "← RETOUR", 0.08f, 36f);
+        var skinRefs = BuildSkinSelectionPanel(skinPanel);
 
         // ── Scripts sur le canvas ──────────────────────────────────────────
         var mainController = canvasGO.AddComponent<MainMenuController>();
@@ -200,7 +184,7 @@ public static class CreateMainMenuSceneEditor
             btn.AddComponent<MenuButtonHoverEffect>();
 
         optBackBtn.AddComponent<MenuButtonHoverEffect>();
-        skinBackBtn.AddComponent<MenuButtonHoverEffect>();
+
 
         // ── Liaisons des boutons du menu principal ─────────────────────────
         WireMainMenuButton(btnGOs[0], mainController, "play");
@@ -210,7 +194,11 @@ public static class CreateMainMenuSceneEditor
 
         // Boutons Retour
         WireOptionsBackButton(optBackBtn, optController);
-        WireSkinBackButton(skinBackBtn, mainController);
+        WireSkinButtons(skinRefs.skinBackBtn, skinRefs.prevBtn, skinRefs.nextBtn,
+                        skinRefs.selectBtn, skinRefs.controller);
+
+        // Injecter automatiquement les vrais prefabs de skins
+        SkinSelectionAutoSetupEditor.PopulateControllerDirect(skinRefs.controller);
 
         // ── References Options ─────────────────────────────────────────────
         AssignOptionsReferences(optController, optionsPanel.transform);
@@ -237,6 +225,188 @@ public static class CreateMainMenuSceneEditor
         }
     }
 
+    // ── Construction du panneau Skin ─────────────────────────────────────────
+
+    private struct SkinPanelRefs
+    {
+        public SkinSelectionController controller;
+        public GameObject skinBackBtn;
+        public GameObject prevBtn;
+        public GameObject nextBtn;
+        public GameObject selectBtn;
+    }
+
+    private static SkinPanelRefs BuildSkinSelectionPanel(GameObject panel)
+    {
+        // Titre
+        var title   = CreateTMPText(panel.transform, "SkinTitle", "SELECTION DU SKIN",
+            42f, TEXT_RED, TextAlignmentOptions.Center);
+        var titleRT = title.GetComponent<RectTransform>();
+        titleRT.anchorMin = new Vector2(0f, 1f);
+        titleRT.anchorMax = new Vector2(1f, 1f);
+        titleRT.pivot     = new Vector2(0.5f, 1f);
+        titleRT.offsetMin = new Vector2(0f, -85f);
+        titleRT.offsetMax = new Vector2(0f, -20f);
+
+        // Zone de preview 3D (RawImage — alimentee par RenderTexture)
+        var rawPreviewGO = new GameObject("SkinPreviewRaw",
+            typeof(RectTransform), typeof(UnityEngine.UI.RawImage));
+        rawPreviewGO.transform.SetParent(panel.transform, false);
+        var rawRT = rawPreviewGO.GetComponent<RectTransform>();
+        rawRT.anchorMin = new Vector2(0.1f, 0.42f);
+        rawRT.anchorMax = new Vector2(0.9f, 0.80f);
+        rawRT.offsetMin = Vector2.zero;
+        rawRT.offsetMax = Vector2.zero;
+        var rawImg = rawPreviewGO.GetComponent<UnityEngine.UI.RawImage>();
+        rawImg.color = Color.white;
+
+        // Label placeholder
+        var noPreview = CreateTMPText(panel.transform, "NoPreviewLabel", "[ Apercu ]",
+            28f, new Color(0.4f, 0.4f, 0.4f, 0.8f), TextAlignmentOptions.Center);
+        var npRT = noPreview.GetComponent<RectTransform>();
+        npRT.anchorMin = new Vector2(0.1f, 0.52f);
+        npRT.anchorMax = new Vector2(0.9f, 0.70f);
+        npRT.offsetMin = Vector2.zero;
+        npRT.offsetMax = Vector2.zero;
+        noPreview.gameObject.SetActive(false);
+
+        // Nom du skin
+        var nameText = CreateTMPText(panel.transform, "SkinNameText", "",
+            34f, TEXT_WHITE, TextAlignmentOptions.Center);
+        var nameRT = nameText.GetComponent<RectTransform>();
+        nameRT.anchorMin = new Vector2(0.05f, 0.36f);
+        nameRT.anchorMax = new Vector2(0.95f, 0.43f);
+        nameRT.offsetMin = Vector2.zero;
+        nameRT.offsetMax = Vector2.zero;
+        nameText.fontStyle = FontStyles.Bold;
+
+        // Bouton gauche
+        var prevBtnGO = new GameObject("Btn_Prev", typeof(RectTransform),
+            typeof(UnityEngine.UI.Button), typeof(UnityEngine.UI.Image));
+        prevBtnGO.transform.SetParent(panel.transform, false);
+        var prevRT = prevBtnGO.GetComponent<RectTransform>();
+        prevRT.anchorMin = new Vector2(0f,    0.52f);
+        prevRT.anchorMax = new Vector2(0.14f, 0.70f);
+        prevRT.offsetMin = new Vector2(10f, 0f);
+        prevRT.offsetMax = Vector2.zero;
+        StyleArrowButton(prevBtnGO, "<");
+
+        // Bouton droit
+        var nextBtnGO = new GameObject("Btn_Next", typeof(RectTransform),
+            typeof(UnityEngine.UI.Button), typeof(UnityEngine.UI.Image));
+        nextBtnGO.transform.SetParent(panel.transform, false);
+        var nextRT = nextBtnGO.GetComponent<RectTransform>();
+        nextRT.anchorMin = new Vector2(0.86f, 0.52f);
+        nextRT.anchorMax = new Vector2(1f,    0.70f);
+        nextRT.offsetMin = Vector2.zero;
+        nextRT.offsetMax = new Vector2(-10f, 0f);
+        StyleArrowButton(nextBtnGO, ">");
+
+        // Bouton Selectionner (centre)
+        var selectBtnGO = CreateMenuButton(panel.transform, "SELECTIONNER", 0.24f, 32f);
+        selectBtnGO.AddComponent<MenuButtonHoverEffect>();
+        var selectRT = selectBtnGO.GetComponent<RectTransform>();
+        selectRT.anchorMin = new Vector2(0.15f, 0.24f);
+        selectRT.anchorMax = new Vector2(0.85f, 0.325f);
+        selectRT.offsetMin = Vector2.zero;
+        selectRT.offsetMax = Vector2.zero;
+        var selectLabel = selectBtnGO.GetComponentInChildren<TextMeshProUGUI>();
+        if (selectLabel != null) selectLabel.alignment = TextAlignmentOptions.Center;
+
+        // Feedback
+        var feedbackText = CreateTMPText(panel.transform, "FeedbackText", "Skin selectionne !",
+            24f, TEXT_RED, TextAlignmentOptions.Center);
+        var fbRT = feedbackText.GetComponent<RectTransform>();
+        fbRT.anchorMin = new Vector2(0f, 0.17f);
+        fbRT.anchorMax = new Vector2(1f, 0.24f);
+        fbRT.offsetMin = Vector2.zero;
+        fbRT.offsetMax = Vector2.zero;
+        feedbackText.gameObject.SetActive(false);
+
+        // Bouton Retour
+        var skinBackBtnGO = CreateMenuButton(panel.transform, "< RETOUR", 0.08f, 32f);
+        skinBackBtnGO.AddComponent<MenuButtonHoverEffect>();
+
+        // ── PreviewCamera (layer 31, rend dans RenderTexture) ──────────────
+        var camGO = new GameObject("SkinPreviewCamera");
+        camGO.transform.SetParent(panel.transform.root, false);
+        camGO.transform.position = new Vector3(0f, 1f, -4f);
+        camGO.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+
+        var previewCam = camGO.AddComponent<Camera>();
+        previewCam.clearFlags       = CameraClearFlags.SolidColor;
+        previewCam.backgroundColor  = new Color(0.06f, 0.06f, 0.09f, 0f);
+        previewCam.cullingMask      = 1 << 31;
+        previewCam.fieldOfView      = 40f;
+        previewCam.nearClipPlane    = 0.1f;
+        previewCam.farClipPlane     = 50f;
+        previewCam.depth            = -1;
+        previewCam.allowHDR         = false;
+
+        // ── Anchor 3D (la ou le modele sera instancie) ─────────────────────
+        var anchorGO = new GameObject("SkinPreviewAnchor");
+        anchorGO.transform.SetParent(panel.transform.root, false);
+        anchorGO.transform.position = new Vector3(0f, 0f, 0f);
+
+        // ── Controleur ─────────────────────────────────────────────────────
+        var ctrl = panel.AddComponent<SkinSelectionController>();
+        ctrl.previewRawImage = rawImg;
+        ctrl.skinNameText    = nameText;
+        ctrl.feedbackText    = feedbackText;
+        ctrl.noPreviewLabel  = noPreview.gameObject;
+        ctrl.previewCamera   = previewCam;
+        ctrl.previewAnchor   = anchorGO.transform;
+
+        return new SkinPanelRefs
+        {
+            controller  = ctrl,
+            skinBackBtn = skinBackBtnGO,
+            prevBtn     = prevBtnGO,
+            nextBtn     = nextBtnGO,
+            selectBtn   = selectBtnGO,
+        };
+    }
+
+    private static void StyleArrowButton(GameObject go, string arrow)
+    {
+        var btn = go.GetComponent<UnityEngine.UI.Button>();
+        var img = go.GetComponent<UnityEngine.UI.Image>();
+        img.color = new Color(0.1f, 0.1f, 0.14f, 0.9f);
+        var colors = btn.colors;
+        colors.normalColor      = new Color(0.1f, 0.1f, 0.14f, 0.9f);
+        colors.highlightedColor = new Color(0.82f, 0.06f, 0.06f, 0.8f);
+        colors.pressedColor     = new Color(0.55f, 0.02f, 0.02f, 1f);
+        btn.colors    = colors;
+        btn.targetGraphic = img;
+        var label = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+        label.transform.SetParent(go.transform, false);
+        StretchFull(label.GetComponent<RectTransform>());
+        var tmp = label.GetComponent<TextMeshProUGUI>();
+        tmp.text      = arrow;
+        tmp.fontSize  = 48f;
+        tmp.color     = TEXT_WHITE;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontStyle = FontStyles.Bold;
+    }
+
+    private static void WireSkinButtons(
+        GameObject backBtn, GameObject prevBtn, GameObject nextBtn,
+        GameObject selectBtn, SkinSelectionController ctrl)
+    {
+        if (ctrl == null) return;
+        var back = backBtn?.GetComponent<UnityEngine.UI.Button>();
+        if (back != null)
+            UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(back.onClick, ctrl.OnBackClicked);
+        var prev = prevBtn?.GetComponent<UnityEngine.UI.Button>();
+        if (prev != null)
+            UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(prev.onClick, ctrl.OnPreviousClicked);
+        var next = nextBtn?.GetComponent<UnityEngine.UI.Button>();
+        if (next != null)
+            UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(next.onClick, ctrl.OnNextClicked);
+        var select = selectBtn?.GetComponent<UnityEngine.UI.Button>();
+        if (select != null)
+            UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(select.onClick, ctrl.OnSelectClicked);
+    }
     // ── Helpers de construction UI ─────────────────────────────────────────
 
     private static Image CreatePanel(Transform parent, string name, Color color)
@@ -428,7 +598,7 @@ public static class CreateMainMenuSceneEditor
         fillRT.anchorMax = new Vector2(1f, 1f);
         fillRT.offsetMin = Vector2.zero;
         fillRT.offsetMax = Vector2.zero;
-        fillGO.GetComponent<Image>().color = TEXT_YELLOW;
+        fillGO.GetComponent<Image>().color = TEXT_RED;
         slider.fillRect = fillRT;
 
         // Handle
@@ -464,7 +634,7 @@ public static class CreateMainMenuSceneEditor
         checkGO.transform.SetParent(bgGO.transform, false);
         StretchFull(checkGO.GetComponent<RectTransform>());
         var checkImg = checkGO.GetComponent<Image>();
-        checkImg.color = TEXT_YELLOW;
+        checkImg.color = TEXT_RED;
         toggle.graphic = checkImg;
     }
 
@@ -533,7 +703,7 @@ public static class CreateMainMenuSceneEditor
         itemCheckRT.offsetMin = Vector2.zero;
         itemCheckRT.offsetMax = Vector2.zero;
         var itemCheckImg = itemCheckGO.GetComponent<Image>();
-        itemCheckImg.color = TEXT_YELLOW;
+        itemCheckImg.color = TEXT_RED;
         itemToggle.graphic = itemCheckImg;
 
         var itemLabelGO = new GameObject("Item Label", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -582,12 +752,6 @@ public static class CreateMainMenuSceneEditor
         UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(btn.onClick, ctrl.OnBackClicked);
     }
 
-    private static void WireSkinBackButton(GameObject btnGO, MainMenuController ctrl)
-    {
-        var btn = btnGO.GetComponent<Button>();
-        if (btn == null || ctrl == null) return;
-        UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(btn.onClick, ctrl.ShowMainMenu);
-    }
 
 
     private static void AddScenesToBuildSettings()
