@@ -1,12 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace MenuGame
 {
     public class MainMenuController : MonoBehaviour
-        {
-            [Header("Scène de jeu")]
-            public string gameplaySceneName = "SampleScene";
+    {
+        [Header("Scene de jeu")]
+        public string gameplaySceneName = "SampleScene";
 
         [Header("Panneaux")]
         public GameObject optionsPanel;
@@ -23,12 +23,10 @@ namespace MenuGame
         void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
-            {
                 ShowMainMenu();
-            }
         }
 
-        // ── Boutons principaux ──────────────────────────────────────────────
+        // -- Boutons principaux -------------------------------------------------
 
         public void OnPlayClicked()
         {
@@ -58,7 +56,7 @@ namespace MenuGame
 #endif
         }
 
-        // ── Navigation ─────────────────────────────────────────────────────
+        // -- Navigation ---------------------------------------------------------
 
         public void ShowMainMenu()
         {
@@ -70,7 +68,7 @@ namespace MenuGame
             Cursor.visible = true;
         }
 
-        // ── Utilitaire ─────────────────────────────────────────────────────
+        // -- Utilitaire ---------------------------------------------------------
 
         private void SetPanelVisible(GameObject panel, bool visible)
         {
