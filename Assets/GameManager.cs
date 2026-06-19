@@ -44,13 +44,13 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         if (Instance == null)
-        {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
         else
+        {
             Destroy(gameObject);
+            return;
+        }
+        PlayerPrefs.SetString("SpawnPoint", "SpawnPointDepart");
     }
 
     void Update()

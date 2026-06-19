@@ -3,12 +3,12 @@
 public class PlayerController : MonoBehaviour
 {
     [Header("Mouvement")]
-    public float vitesse = 9f;
-    public float vitesseSprint = 15f;
+    public float vitesse = 20f;
+    public float vitesseSprint = 30f;
     public float gravite = -9.81f;
 
     [Header("Caméra")]
-    public Transform cameraPrincipale; // À GLISSER dans l'Inspector !
+    public Transform cameraPrincipale;
     public float sensibiliteSouris = 2f;
     public float limiteVerticale = 80f;
 
