@@ -23,13 +23,13 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         if (Instance == null)
-        {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
         else
+        {
             Destroy(gameObject);
+            return;
+        }
+        PlayerPrefs.SetString("SpawnPoint", "SpawnPointDepart");
     }
 
     void Update()
@@ -79,40 +79,5 @@ public class GameManager : MonoBehaviour
         partieTerminee = true;
         Debug.Log("GAME OVER : " + raison);
         // TODO : afficher écran de game over
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // Supprimer doublons EventSystem
-        EventSystem[] eventSystems = Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None);
-        if (eventSystems.Length > 1)
-            for (int i = 1; i < eventSystems.Length; i++)
-                Destroy(eventSystems[i].gameObject);
-
-        // Supprimer doublons AudioListener
-        AudioListener[] listeners = Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
-        if (listeners.Length > 1)
-            for (int i = 1; i < listeners.Length; i++)
-                Destroy(listeners[i]);
-
-        // Reset curseur et joueur
-        StartCoroutine(ResetJoueur());
-    }
-
-    IEnumerator ResetJoueur()
-    {
-        yield return null;
-
-        PlayerController[] pcs = Object.FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
-        if (pcs != null && pcs.Length > 0)
-        {
-            PlayerController pc = pcs[0];
-            pc.menuOuvert = false;
-            pc.enabled = false;
-            yield return null;
-            pc.enabled = true;
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
     }
 }

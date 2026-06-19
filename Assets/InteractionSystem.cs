@@ -15,7 +15,7 @@ public class InteractionSystem : MonoBehaviour
 
     void Start()
     {
-        cam = Camera.main;
+        cam = GetComponentInChildren<Camera>();
     }
 
     void Update()
@@ -28,6 +28,9 @@ public class InteractionSystem : MonoBehaviour
 
     void DetecterObjet()
     {
+        if (cam == null) cam = Camera.main;
+        if (cam == null) return;
+
         Ray rayon = new Ray(cam.transform.position, cam.transform.forward);
         RaycastHit touche;
 
@@ -35,8 +38,17 @@ public class InteractionSystem : MonoBehaviour
         {
             if (touche.collider.CompareTag("Interactable"))
             {
-                objetCible = touche.collider.gameObject;
-                texteInteraction.text = "[E] Interagir avec " + objetCible.name;
+                objetCible = touche.collider.gameObject; // assigner D'ABORD
+                ObjetInteractif obj = objetCible.GetComponent<ObjetInteractif>();
+                PorteTransition porte = objetCible.GetComponent<PorteTransition>();
+                string nom;
+                if (porte != null && porte.nomAffichage != "")
+                    nom = porte.nomAffichage;
+                else if (obj != null && obj.nomAffichage != "")
+                    nom = obj.nomAffichage;
+                else
+                    nom = objetCible.name;
+                texteInteraction.text = "[E] " + nom;
                 return;
             }
         }

@@ -153,6 +153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PorteTransition
   nomScene: SampleScene
   nomSpawnPoint: SpawnPointEntreeMaison
+  nomAffichage: Sortir de ma chambre
 --- !u!65 &20141893
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1395,6 +1396,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObjetInteractif
   nomMinijeu: Case Opening
+  nomAffichage: Ouvrir des caisses d'armes
 --- !u!65 &1928383227
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1412,7 +1414,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
@@ -1423,7 +1425,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1928383225}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -1482,7 +1484,7 @@ Transform:
   m_GameObject: {fileID: 1928383225}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.024, y: -0.519, z: -1.477}
+  m_LocalPosition: {x: 0.826, y: -0.519, z: -1.386}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
