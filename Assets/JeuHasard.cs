@@ -30,6 +30,7 @@ public class JeuHasard : MonoBehaviour
 
     public void OuvrirMenu()
     {
+        if (!GameManager.Instance.PeutJouer()) return;
         panneauJeu.SetActive(true);
         texteResultat.text = "";
         choixJoueur = "";

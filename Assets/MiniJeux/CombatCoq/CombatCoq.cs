@@ -17,9 +17,9 @@ public class CombatCoq : MonoBehaviour
     [Header("Coq A")]
     public TextMeshProUGUI texteNomCoqA;
     public TextMeshProUGUI texteCoteCoqA;
-    public TextMeshProUGUI texteEffetCoqA;
+    public TextMeshProUGUI texteEffetCoqA;   // affiche "ENERGISE !" si boisson donnee
     public Button boutonMiserA;
-    public Button boutonBoisssonA;
+    public Button boutonBoisssonA;           // bouton pour donner boisson energisante au coq A
 
     [Header("Coq B")]
     public TextMeshProUGUI texteNomCoqB;
@@ -48,7 +48,7 @@ public class CombatCoq : MonoBehaviour
     private CoqData coqB;
 
     // --- Etat de la partie ---
-    private int coqChoisi = -1;
+    private int coqChoisi = -1;   // 0 = coq A, 1 = coq B, -1 = pas encore choisi
     private int miseActuelle = 0;
     private bool partieEnCours = false;
 
@@ -74,6 +74,7 @@ public class CombatCoq : MonoBehaviour
     // Ouverture depuis InteractionSystem
     public void OuvrirPanneau()
     {
+        if (!GameManager.Instance.PeutJouer()) return;
         panneauCombat.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -89,11 +90,14 @@ public class CombatCoq : MonoBehaviour
         coqChoisi = -1;
         miseActuelle = 0;
 
+        // Generer les deux coqs avec des cotes aleatoires
         coqA = GenererCoq("Coq Rouge");
         coqB = GenererCoq("Coq Noir");
 
+        // S'assurer que les cotes sont coherentes
         NormaliserCotes();
 
+        // Mettre a jour l'UI
         texteNomCoqA.text = coqA.nom;
         texteCoteCoqA.text = "x" + coqA.cote.ToString("F2");
         texteEffetCoqA.text = "";
@@ -108,6 +112,7 @@ public class CombatCoq : MonoBehaviour
         texteGainResultat.text = "";
         inputMise.text = "";
 
+        // Boutons
         boutonMiserA.interactable = true;
         boutonMiserB.interactable = true;
         boutonBoisssonA.interactable = true;
@@ -168,6 +173,7 @@ public class CombatCoq : MonoBehaviour
     // -----------------------------------------------------------------------
     void DonnerBoisson(int index)
     {
+        // Verifier que le joueur a une boisson dans son inventaire
         if (!GameManager.Instance.UtiliserBoisson())
         {
             texteErreurMise.text = "Vous n'avez pas de boisson energisante !";
@@ -189,6 +195,7 @@ public class CombatCoq : MonoBehaviour
         }
 
         texteErreurMise.text = "";
+        // Ajouter un peu de folie (tricher c'est stressant)
         GameManager.Instance.AjouterFolie(3f);
     }
 
@@ -253,9 +260,11 @@ public class CombatCoq : MonoBehaviour
     // -----------------------------------------------------------------------
     int DeterminerVainqueur()
     {
+        // Regle de triche : coq energise gagne automatiquement
         if (coqA.energise && !coqB.energise) return 0;
         if (coqB.energise && !coqA.energise) return 1;
 
+        // Si les deux sont energises ou aucun : probabilites basees sur les cotes
         float probA = 1f / coqA.cote;
         float probB = 1f / coqB.cote;
         float seuil = probA / (probA + probB);

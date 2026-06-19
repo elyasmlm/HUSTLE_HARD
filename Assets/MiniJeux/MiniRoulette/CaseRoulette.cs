@@ -3,14 +3,14 @@
 /// </summary>
 public enum TypeLot
 {
-    RienDuTout,
+    Perdu,
     NouvellePartieGratuite,
-    PetitGainArgent,
+    Gain100,
+    Gain200,
+    Gain500,
+    Gain1000,
     MultiplicateurX2,
-    MultiplicateurX3,
-    ChapeauCommun,
-    ChapeauRare,
-    TechniqueTriche
+    MultiplicateurX3
 }
 
 /// <summary>

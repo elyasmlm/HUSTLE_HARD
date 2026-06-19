@@ -5,12 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
-/// Mini-jeu : Mini-Roulette
-/// Le joueur paie 5$ pour faire tourner la roulette (10 cases).
-/// Lots possibles : partie gratuite, argent, multiplicateur x2/x3,
-/// chapeau cosmétique, technique de triche, ou rien.
-/// Une partie gratuite permet de rejouer sans payer.
-/// Les multiplicateurs s'appliquent au prochain gain du joueur.
+/// Mini-jeu : Mini-Roulette (100$ par tour)
+/// Triche : aimant -> garantit le meilleur lot (Gain 1000$)
+/// Bloque si folie >= 100%
 /// </summary>
 public class MiniRoulette : MonoBehaviour
 {
@@ -19,7 +16,6 @@ public class MiniRoulette : MonoBehaviour
 
     [Header("Roulette")]
     public TextMeshProUGUI texteCaseActuelle;
-    public TextMeshProUGUI texteAngleCaseIndicateur;
 
     [Header("Resultat")]
     public TextMeshProUGUI texteNomLot;
@@ -33,29 +29,29 @@ public class MiniRoulette : MonoBehaviour
 
     [Header("Boutons")]
     public Button boutonTourner;
+    public Button boutonUtiliserAimant;   // bouton pour activer l'aimant avant de tourner
     public Button boutonFermer;
 
     // --- Constantes ---
-    private const int PRIX_TOUR = 5;
+    private const int PRIX_TOUR = 100;
 
-    // --- Definition des cases (10 cases, total = 100%) ---
-    // Note : "Rien du tout" est mentionne dans les regles mais absent du tableau.
-    // On l'inclut avec 0% (peut etre ajuste si besoin).
+    // --- Cases : total = 10+20+15+8+15+8+3+21 = 100% ---
     private readonly List<CaseRoulette> cases = new List<CaseRoulette>
     {
-        new CaseRoulette(TypeLot.NouvellePartieGratuite,    "Partie gratuite",          "Rejouez sans payer !",                     0.30f),
-        new CaseRoulette(TypeLot.PetitGainArgent,           "Petit gain",               "Vous gagnez entre 1$ et 5$",               0.25f),
-        new CaseRoulette(TypeLot.MultiplicateurX2,          "Multiplicateur x2",        "Votre prochain gain est double",           0.15f),
-        new CaseRoulette(TypeLot.MultiplicateurX3,          "Multiplicateur x3",        "Votre prochain gain est triple",           0.08f),
-        new CaseRoulette(TypeLot.ChapeauCommun,             "Chapeau commun",           "Un chapeau cosmétique simple",             0.10f),
-        new CaseRoulette(TypeLot.ChapeauRare,               "Chapeau rare",             "Un chapeau cosmétique plus special !",     0.05f),
-        new CaseRoulette(TypeLot.TechniqueTriche,           "Technique de triche",      "Un avantage utilisable dans le jeu",       0.07f),
-        // Total = 1.00 (pas de "rien du tout" selon le tableau fourni)
+        new CaseRoulette(TypeLot.NouvellePartieGratuite, "Partie gratuite",   "Rejouez sans payer !",           0.10f),
+        new CaseRoulette(TypeLot.Gain100,                "Gain 100$",         "Vous gagnez 100$ !",             0.20f),
+        new CaseRoulette(TypeLot.MultiplicateurX2,       "Multiplicateur x2", "Votre prochain gain est double", 0.15f),
+        new CaseRoulette(TypeLot.MultiplicateurX3,       "Multiplicateur x3", "Votre prochain gain est triple", 0.08f),
+        new CaseRoulette(TypeLot.Gain200,                "Gain 200$",         "Vous gagnez 200$ !",             0.15f),
+        new CaseRoulette(TypeLot.Gain500,                "Gain 500$",         "Vous gagnez 500$ !",             0.08f),
+        new CaseRoulette(TypeLot.Gain1000,               "Gain 1000$",        "Vous gagnez 1 000$ !",           0.03f),
+        new CaseRoulette(TypeLot.Perdu,                  "Perdu",             "Pas de chance...",               0.21f),
     };
 
     // --- Etat ---
     private bool enRotation = false;
     private int partiesGratuitesDisponibles = 0;
+    private bool aimantActif = false;
 
     private PlayerController playerController;
 
@@ -65,6 +61,7 @@ public class MiniRoulette : MonoBehaviour
         playerController = Object.FindFirstObjectByType<PlayerController>();
 
         boutonTourner.onClick.AddListener(TenterTourner);
+        boutonUtiliserAimant.onClick.AddListener(UtiliserAimant);
         boutonFermer.onClick.AddListener(FermerPanneau);
 
         panneauRoulette.SetActive(false);
@@ -73,11 +70,19 @@ public class MiniRoulette : MonoBehaviour
     // -----------------------------------------------------------------------
     public void OuvrirPanneau()
     {
+        // Bloquer si folie a 100%
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax)
+        {
+            // On n'ouvre pas le panneau, le message sera gere par l'InteractionSystem
+            return;
+        }
+
         panneauRoulette.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         if (playerController != null) playerController.menuOuvert = true;
 
+        aimantActif = false;
         MettreAJourUI();
         ResetResultat();
     }
@@ -92,15 +97,27 @@ public class MiniRoulette : MonoBehaviour
         texteMultiplicateurActif.text = GameManager.Instance.multiplicateurGain > 1f
             ? "Multiplicateur actif : x" + GameManager.Instance.multiplicateurGain
             : "";
+        boutonUtiliserAimant.interactable = GameManager.Instance.aimants > 0 && !aimantActif;
     }
 
     void ResetResultat()
     {
         texteNomLot.text = "";
         texteDescriptionLot.text = "";
-        texteResultatSpecial.text = "";
+        texteResultatSpecial.text = aimantActif ? "🧲 Aimant actif !" : "";
         texteCaseActuelle.text = "?";
         boutonTourner.interactable = true;
+    }
+
+    // -----------------------------------------------------------------------
+    void UtiliserAimant()
+    {
+        if (!GameManager.Instance.UtiliserAimant()) return;
+
+        aimantActif = true;
+        boutonUtiliserAimant.interactable = false;
+        texteResultatSpecial.text = "🧲 Aimant actif ! Prochain tour garanti Gain 1000$";
+        texteResultatSpecial.color = UnityEngine.Color.magenta;
     }
 
     // -----------------------------------------------------------------------
@@ -108,7 +125,6 @@ public class MiniRoulette : MonoBehaviour
     {
         if (enRotation) return;
 
-        // Partie gratuite disponible -> gratuit
         if (partiesGratuitesDisponibles > 0)
         {
             partiesGratuitesDisponibles--;
@@ -117,10 +133,9 @@ public class MiniRoulette : MonoBehaviour
             return;
         }
 
-        // Sinon payer
         if (GameManager.Instance.argent < PRIX_TOUR)
         {
-            texteResultatSpecial.text = "Pas assez d'argent ! (5$ requis)";
+            texteResultatSpecial.text = "Pas assez d'argent ! (100$ requis)";
             texteResultatSpecial.color = UnityEngine.Color.red;
             return;
         }
@@ -137,12 +152,11 @@ public class MiniRoulette : MonoBehaviour
         boutonTourner.interactable = false;
         texteNomLot.text = "";
         texteDescriptionLot.text = "";
-        texteResultatSpecial.text = "";
+        texteResultatSpecial.text = aimantActif ? "🧲 Aimant actif..." : "";
 
-        // Animation : faire defiler les cases rapidement puis ralentir
         float dureeTotal = 2.5f;
         float elapsed = 0f;
-        float interval = 0.08f; // vitesse initiale
+        float interval = 0.08f;
 
         string[] nomsAffichage = ObtenirNomsAffichage();
         int indexAnim = 0;
@@ -152,7 +166,6 @@ public class MiniRoulette : MonoBehaviour
             texteCaseActuelle.text = nomsAffichage[indexAnim % nomsAffichage.Length];
             indexAnim++;
 
-            // Ralentissement progressif dans la derniere seconde
             float ratioTemps = elapsed / dureeTotal;
             if (ratioTemps > 0.6f)
                 interval = Mathf.Lerp(0.08f, 0.35f, (ratioTemps - 0.6f) / 0.4f);
@@ -161,8 +174,12 @@ public class MiniRoulette : MonoBehaviour
             elapsed += interval;
         }
 
-        // Tirer le lot final
-        CaseRoulette lotTire = TirerLot();
+        // Tirer le lot : aimant force Gain1000$
+        CaseRoulette lotTire = aimantActif
+            ? cases.Find(c => c.type == TypeLot.Gain1000)
+            : TirerLot();
+
+        aimantActif = false;
         texteCaseActuelle.text = lotTire.nom;
 
         yield return new WaitForSeconds(0.3f);
@@ -186,8 +203,7 @@ public class MiniRoulette : MonoBehaviour
             if (r < cumul) return c;
         }
 
-        // Fallback (ne devrait pas arriver si les probas somment a 1)
-        return cases[0];
+        return cases[cases.Count - 1]; // fallback : Perdu
     }
 
     // -----------------------------------------------------------------------
@@ -204,15 +220,10 @@ public class MiniRoulette : MonoBehaviour
                 texteResultatSpecial.color = UnityEngine.Color.cyan;
                 break;
 
-            case TypeLot.PetitGainArgent:
-                float gain = Random.Range(1f, 6f);
-                gain = Mathf.Floor(gain);
-                // Appliquer le multiplicateur si actif
-                gain = AppliquerMultiplicateur(gain);
-                GameManager.Instance.AjouterArgent(gain);
-                texteResultatSpecial.text = "+ $" + gain + " !";
-                texteResultatSpecial.color = UnityEngine.Color.green;
-                break;
+            case TypeLot.Gain100: AppliquerGain(100f); break;
+            case TypeLot.Gain200: AppliquerGain(200f); break;
+            case TypeLot.Gain500: AppliquerGain(500f); break;
+            case TypeLot.Gain1000: AppliquerGain(1000f); break;
 
             case TypeLot.MultiplicateurX2:
                 GameManager.Instance.multiplicateurGain = 2f;
@@ -226,46 +237,25 @@ public class MiniRoulette : MonoBehaviour
                 texteResultatSpecial.color = UnityEngine.Color.yellow;
                 break;
 
-            case TypeLot.ChapeauCommun:
-                GameManager.Instance.AjouterChapeau(RareteChapeau.Commun);
-                texteResultatSpecial.text = "🎩 Chapeau commun obtenu !";
-                texteResultatSpecial.color = UnityEngine.Color.white;
-                break;
-
-            case TypeLot.ChapeauRare:
-                GameManager.Instance.AjouterChapeau(RareteChapeau.Rare);
-                texteResultatSpecial.text = "🎩 Chapeau RARE obtenu !";
-                texteResultatSpecial.color = UnityEngine.Color.magenta;
-                break;
-
-            case TypeLot.TechniqueTriche:
-                GameManager.Instance.AjouterTechniqueTriche();
-                texteResultatSpecial.text = "🃏 Technique de triche obtenue !";
-                texteResultatSpecial.color = UnityEngine.Color.yellow;
-                break;
-
-            case TypeLot.RienDuTout:
-                texteResultatSpecial.text = "Rien... Dommage.";
-                texteResultatSpecial.color = UnityEngine.Color.gray;
-                break;
+            case TypeLot.Perdu:
+                texteResultatSpecial.text = "Perdu... -100$";
+                texteResultatSpecial.color = UnityEngine.Color.red;
+                GameManager.Instance.AjouterFolie(5f);
+                return;
         }
 
         GameManager.Instance.AjouterFolie(3f);
     }
 
-    // -----------------------------------------------------------------------
-    /// <summary>
-    /// Applique le multiplicateur de gain actif puis le remet a 1 (consomme).
-    /// </summary>
-    float AppliquerMultiplicateur(float gain)
+    void AppliquerGain(float montant)
     {
-        float multi = GameManager.Instance.multiplicateurGain;
-        if (multi > 1f)
-        {
-            gain *= multi;
-            GameManager.Instance.multiplicateurGain = 1f; // consomme le multiplicateur
-        }
-        return gain;
+        float gainFinal = montant * GameManager.Instance.multiplicateurGain;
+        if (GameManager.Instance.multiplicateurGain > 1f)
+            GameManager.Instance.multiplicateurGain = 1f;
+
+        GameManager.Instance.AjouterArgent(gainFinal);
+        texteResultatSpecial.text = "+ $" + gainFinal.ToString("N0") + " !";
+        texteResultatSpecial.color = UnityEngine.Color.green;
     }
 
     // -----------------------------------------------------------------------
