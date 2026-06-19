@@ -48,6 +48,7 @@ public class TicketGrattage : MonoBehaviour
 
     public void OuvrirPanneau()
     {
+        if (!GameManager.Instance.PeutJouer()) return;
         panneauTicket.SetActive(true);
         ResetTicket();
 
