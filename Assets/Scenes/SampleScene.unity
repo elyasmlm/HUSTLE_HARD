@@ -3176,7 +3176,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 54eeefbcb2d06444a8046eef7ec98b35, type: 3}
       propertyPath: m_Name
-      value: Man_in_black_dress_0227
+      value: VigileCasino
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7790,6 +7790,13 @@ MonoBehaviour:
   tempsRestant: 1440
   folie: 0
   folieMax: 100
+  multiplicateurGain: 1
+  boissonEnergisante: 0
+  zdeh: 0
+  aimants: 0
+  chapeauxCommuns: 0
+  chapeauxRares: 0
+  techniquesDisponibles: 0
 --- !u!1 &1273221318 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3070778173083526129, guid: e7c1e73a83543dc4e89b8709b67d78cd, type: 3}
@@ -10801,7 +10808,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 66b376e38f7e75547a1349f68728e1ee, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.1
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 66b376e38f7e75547a1349f68728e1ee, type: 3}
       propertyPath: m_LocalPosition.z
@@ -12988,6 +12995,79 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2144492602232178039, guid: e7c1e73a83543dc4e89b8709b67d78cd, type: 3}
+--- !u!1001 &1772372433
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1729.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1729.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1729.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 132.00699
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16.4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 158.07811
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
+      propertyPath: m_Name
+      value: TheDice
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 146df68cfc11a474da9fa3259694106c, type: 3}
 --- !u!1 &1781269517 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7907072434277468739, guid: e7c1e73a83543dc4e89b8709b67d78cd, type: 3}
@@ -15203,3 +15283,4 @@ SceneRoots:
   - {fileID: 1749208158}
   - {fileID: 1035415651}
   - {fileID: 504327856}
+  - {fileID: 1772372433}

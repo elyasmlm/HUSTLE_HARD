@@ -28,12 +28,11 @@ public class InteractionSystem : MonoBehaviour
 
     void DetecterObjet()
     {
-        if (cam == null) cam = Camera.main;
-        if (cam == null) return;
+        if (cam == null) cam = GetComponentInChildren<Camera>();
+        if (cam == null) { Debug.Log("CAM NULL"); return; }
 
         Ray rayon = new Ray(cam.transform.position, cam.transform.forward);
         RaycastHit touche;
-
         if (Physics.Raycast(rayon, out touche, porteeInteraction))
         {
             if (touche.collider.CompareTag("Interactable"))
