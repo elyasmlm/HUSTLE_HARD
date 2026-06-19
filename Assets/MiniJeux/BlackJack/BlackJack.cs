@@ -47,6 +47,7 @@ public class Blackjack : MonoBehaviour
     public TextMeshProUGUI texteProtectionsRestantes;
 
     [Header("Resultat")]
+    public GameObject zoneResultat;
     public TextMeshProUGUI texteResultat;
     public Button boutonRejouer;
     public Button boutonFermer;
@@ -71,14 +72,21 @@ public class Blackjack : MonoBehaviour
     {
         playerController = Object.FindFirstObjectByType<PlayerController>();
 
-        boutonConfirmerMise.onClick.AddListener(CommencerPartie);
-        boutonTirer.onClick.AddListener(Tirer);
-        boutonRester.onClick.AddListener(Rester);
-        boutonSoudoyer.onClick.AddListener(SoudoyerCroupier);
-        boutonRejouer.onClick.AddListener(ResetPanneau);
-        boutonFermer.onClick.AddListener(FermerPanneau);
+        if (boutonConfirmerMise != null) boutonConfirmerMise.onClick.AddListener(CommencerPartie);
+        if (boutonTirer       != null) boutonTirer.onClick.AddListener(Tirer);
+        if (boutonRester      != null) boutonRester.onClick.AddListener(Rester);
+        if (boutonSoudoyer    != null) boutonSoudoyer.onClick.AddListener(SoudoyerCroupier);
+        if (boutonRejouer     != null) boutonRejouer.onClick.AddListener(ResetPanneau);
+        if (boutonFermer      != null) boutonFermer.onClick.AddListener(FermerPanneau);
 
-        panneauBlackjack.SetActive(false);
+        if (panneauBlackjack != null) panneauBlackjack.SetActive(false);
+    }
+
+    // -----------------------------------------------------------------------
+    void Update()
+    {
+        if (panneauBlackjack == null || !panneauBlackjack.activeSelf) return;
+        if (Input.GetKeyDown(KeyCode.Escape)) FermerPanneau();
     }
 
     // -----------------------------------------------------------------------
@@ -101,13 +109,14 @@ public class Blackjack : MonoBehaviour
         mainJoueur.Clear();
         mainCroupier.Clear();
 
-        panneauJeu.SetActive(false);
-        texteResultat.text = "";
-        inputMise.text = "";
-        texteErreurMise.text = "";
+        if (panneauJeu != null) panneauJeu.SetActive(false);
+        if (zoneResultat != null) zoneResultat.SetActive(false);
+        if (texteResultat != null) texteResultat.text = "";
+        if (inputMise != null) inputMise.text = "";
+        if (texteErreurMise != null) texteErreurMise.text = "";
 
-        boutonConfirmerMise.gameObject.SetActive(true);
-        boutonRejouer.gameObject.SetActive(false);
+        if (boutonConfirmerMise != null) boutonConfirmerMise.gameObject.SetActive(true);
+        if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(false);
 
         MettreAJourArgent();
         MettreAJourProtections();
@@ -115,15 +124,18 @@ public class Blackjack : MonoBehaviour
 
     void MettreAJourArgent()
     {
-        texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
-        boutonSoudoyer.interactable = GameManager.Instance.argent >= COUT_SOUDOYER && partiesProtegees == 0;
+        if (texteArgent != null)
+            texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+        if (boutonSoudoyer != null)
+            boutonSoudoyer.interactable = GameManager.Instance.argent >= COUT_SOUDOYER && partiesProtegees == 0;
     }
 
     void MettreAJourProtections()
     {
-        texteProtectionsRestantes.text = partiesProtegees > 0
-            ? "?? Croupier soudoye : " + partiesProtegees + " partie(s) protegee(s)"
-            : "";
+        if (texteProtectionsRestantes != null)
+            texteProtectionsRestantes.text = partiesProtegees > 0
+                ? "🛡 " + partiesProtegees
+                : "";
     }
 
     // -----------------------------------------------------------------------
@@ -146,9 +158,10 @@ public class Blackjack : MonoBehaviour
         GameManager.Instance.RetirerArgent(miseActuelle);
         MettreAJourArgent();
 
-        boutonConfirmerMise.gameObject.SetActive(false);
-        panneauJeu.SetActive(true);
-        texteResultat.text = "";
+        if (boutonConfirmerMise != null) boutonConfirmerMise.gameObject.SetActive(false);
+        if (panneauJeu != null) panneauJeu.SetActive(true);
+        if (texteResultat != null) texteResultat.text = "";
+        if (zoneResultat != null) zoneResultat.SetActive(false);
         partieEnCours = true;
 
         // Distribuer 2 cartes a chacun
@@ -160,9 +173,9 @@ public class Blackjack : MonoBehaviour
         mainJoueur.Add(TirerCarte());
         mainCroupier.Add(TirerCarte());
 
-        texteMiseEnCours.text = "Mise : $" + miseActuelle;
-        boutonTirer.interactable = true;
-        boutonRester.interactable = true;
+        if (texteMiseEnCours != null) texteMiseEnCours.text = "Mise : $" + miseActuelle;
+        if (boutonTirer != null) boutonTirer.interactable = true;
+        if (boutonRester != null) boutonRester.interactable = true;
 
         AfficherMains(croupierCache: true);
 
@@ -234,58 +247,54 @@ public class Blackjack : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         partieEnCours = false;
-        boutonTirer.interactable = false;
-        boutonRester.interactable = false;
+        if (boutonTirer  != null) boutonTirer.interactable = false;
+        if (boutonRester != null) boutonRester.interactable = false;
         AfficherMains(croupierCache: false);
+        if (zoneResultat != null) zoneResultat.SetActive(true);
 
         switch (resultat)
         {
             case ResultatPartie.Blackjack:
-                texteResultat.text = "?? BLACKJACK ! Vous gagnez $" + (miseActuelle * 2) + " !";
-                texteResultat.color = Color.yellow;
+                if (texteResultat != null) { texteResultat.text = "🃏 BLACKJACK ! +$" + (miseActuelle * 2); texteResultat.color = Color.yellow; }
                 GameManager.Instance.AjouterArgent(miseActuelle * 2);
                 GameManager.Instance.AjouterFolie(6f);
                 break;
 
             case ResultatPartie.Victoire:
-                texteResultat.text = "? Victoire ! Vous gagnez $" + (miseActuelle * 2) + " !";
-                texteResultat.color = Color.green;
+                if (texteResultat != null) { texteResultat.text = "✅ Victoire ! +$" + (miseActuelle * 2); texteResultat.color = Color.green; }
                 GameManager.Instance.AjouterArgent(miseActuelle * 2);
                 GameManager.Instance.AjouterFolie(4f);
                 break;
 
             case ResultatPartie.Egalite:
-                texteResultat.text = "?? Egalite ! Mise remboursee.";
-                texteResultat.color = Color.cyan;
+                if (texteResultat != null) { texteResultat.text = "🤝 Égalité — mise remboursée"; texteResultat.color = Color.cyan; }
                 GameManager.Instance.AjouterArgent(miseActuelle);
                 GameManager.Instance.AjouterFolie(2f);
                 break;
 
             case ResultatPartie.Bust:
-                texteResultat.text = "?? Bust ! Vous depassez 21.";
-                texteResultat.color = Color.red;
+                if (texteResultat != null) { texteResultat.text = "💥 Bust ! Vous dépassez 21."; texteResultat.color = Color.red; }
                 AppliquerDefaite();
                 break;
 
             case ResultatPartie.Defaite:
-                texteResultat.text = "? Perdu ! Le croupier gagne.";
-                texteResultat.color = Color.red;
+                if (texteResultat != null) { texteResultat.text = "❌ Perdu ! Le croupier gagne."; texteResultat.color = Color.red; }
                 AppliquerDefaite();
                 break;
         }
 
         MettreAJourArgent();
-        boutonRejouer.gameObject.SetActive(true);
+        if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(true);
     }
 
     void AppliquerDefaite()
     {
         if (partiesProtegees > 0)
         {
-            // Triche active : remboursement de la mise
             GameManager.Instance.AjouterArgent(miseActuelle);
             partiesProtegees--;
-            texteResultat.text += "\n?? Mise remboursee (croupier soudoye) !";
+            if (texteResultat != null)
+                texteResultat.text += "\n🛡 Bouclier utilisé — mise remboursée !";
             MettreAJourProtections();
         }
 
@@ -297,8 +306,11 @@ public class Blackjack : MonoBehaviour
     {
         if (GameManager.Instance.argent < COUT_SOUDOYER)
         {
-            texteErreurMise.text = "Il faut $" + COUT_SOUDOYER + " pour soudoyer le croupier !";
-            texteErreurMise.color = Color.red;
+            if (texteErreurMise != null)
+            {
+                texteErreurMise.text = "Il faut $" + COUT_SOUDOYER + " pour soudoyer le croupier !";
+                texteErreurMise.color = Color.red;
+            }
             return;
         }
 
@@ -309,8 +321,11 @@ public class Blackjack : MonoBehaviour
         MettreAJourArgent();
         MettreAJourProtections();
 
-        texteErreurMise.text = "? Croupier soudoye ! 3 parties protegees.";
-        texteErreurMise.color = Color.green;
+        if (texteErreurMise != null)
+        {
+            texteErreurMise.text = "💰 Croupier soudoyé ! 3 parties protégées.";
+            texteErreurMise.color = Color.green;
+        }
 
         GameManager.Instance.AjouterFolie(8f);
     }

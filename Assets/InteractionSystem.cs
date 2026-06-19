@@ -13,6 +13,7 @@ public class InteractionSystem : MonoBehaviour
     [Header("Mini-jeux")]
     public CombatCoq combatCoq;
     public TicketGrattage ticketGrattage;
+    public Blackjack blackjack;
 
     private Camera cam;
     private GameObject objetCible;
@@ -29,6 +30,8 @@ public class InteractionSystem : MonoBehaviour
             combatCoq = Object.FindFirstObjectByType<CombatCoq>();
         if (ticketGrattage == null)
             ticketGrattage = Object.FindFirstObjectByType<TicketGrattage>();
+        if (blackjack == null)
+            blackjack = Object.FindFirstObjectByType<Blackjack>();
     }
 
     void Update()
@@ -100,6 +103,15 @@ public class InteractionSystem : MonoBehaviour
             {
                 if (ticketGrattage != null) ticketGrattage.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] TicketGrattage non assigné dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("Blackjack", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Black Jack", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("BlackJack", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (blackjack != null) blackjack.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] Blackjack non assigné dans l'Inspector !");
                 return;
             }
 
