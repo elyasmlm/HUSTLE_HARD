@@ -18,6 +18,7 @@ public class MiniRoulette : MonoBehaviour
     public TextMeshProUGUI texteCaseActuelle;
 
     [Header("Resultat")]
+    public GameObject zoneResultat;
     public TextMeshProUGUI texteNomLot;
     public TextMeshProUGUI texteDescriptionLot;
     public TextMeshProUGUI texteResultatSpecial;
@@ -26,11 +27,16 @@ public class MiniRoulette : MonoBehaviour
     public TextMeshProUGUI texteArgent;
     public TextMeshProUGUI textePartiesGratuites;
     public TextMeshProUGUI texteMultiplicateurActif;
+    public TextMeshProUGUI texteErreur;
 
     [Header("Boutons")]
     public Button boutonTourner;
-    public Button boutonUtiliserAimant;   // bouton pour activer l'aimant avant de tourner
+    public Button boutonUtiliserAimant;
+    public Button boutonRejouer;
     public Button boutonFermer;
+
+    [Header("Triche")]
+    public TextMeshProUGUI texteAimantsStock;
 
     // --- Constantes ---
     private const int PRIX_TOUR = 100;
@@ -90,23 +96,69 @@ public class MiniRoulette : MonoBehaviour
     // -----------------------------------------------------------------------
     void MettreAJourUI()
     {
-        texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
-        textePartiesGratuites.text = partiesGratuitesDisponibles > 0
-            ? "Parties gratuites : " + partiesGratuitesDisponibles
-            : "";
-        texteMultiplicateurActif.text = GameManager.Instance.multiplicateurGain > 1f
-            ? "Multiplicateur actif : x" + GameManager.Instance.multiplicateurGain
-            : "";
-        boutonUtiliserAimant.interactable = GameManager.Instance.aimants > 0 && !aimantActif;
+        if (texteArgent != null)
+            texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+
+        if (textePartiesGratuites != null)
+            textePartiesGratuites.text = partiesGratuitesDisponibles > 0
+                ? "🎟 x" + partiesGratuitesDisponibles + " gratuit(s)"
+                : "";
+
+        if (texteMultiplicateurActif != null)
+            texteMultiplicateurActif.text = GameManager.Instance.multiplicateurGain > 1f
+                ? "⚡ x" + GameManager.Instance.multiplicateurGain
+                : "";
+
+        if (texteAimantsStock != null)
+            texteAimantsStock.text = GameManager.Instance.aimants > 0
+                ? "🧲 x" + GameManager.Instance.aimants
+                : "Aucun aimant";
+
+        if (boutonUtiliserAimant != null)
+            boutonUtiliserAimant.interactable = GameManager.Instance.aimants > 0 && !aimantActif;
+
+        bool peutJouer = !enRotation &&
+            (partiesGratuitesDisponibles > 0 || GameManager.Instance.argent >= PRIX_TOUR);
+        if (boutonTourner != null) boutonTourner.interactable = peutJouer;
+
+        if (texteErreur != null)
+        {
+            if (GameManager.Instance.folie >= GameManager.Instance.folieMax)
+            {
+                texteErreur.text = "Folie maximale : impossible de jouer.";
+                texteErreur.color = Color.red;
+                if (boutonTourner != null) boutonTourner.interactable = false;
+            }
+            else if (!peutJouer)
+            {
+                texteErreur.text = "Argent insuffisant. (100$ requis)";
+                texteErreur.color = Color.red;
+            }
+            else
+            {
+                texteErreur.text = "";
+            }
+        }
     }
 
     void ResetResultat()
     {
-        texteNomLot.text = "";
-        texteDescriptionLot.text = "";
-        texteResultatSpecial.text = aimantActif ? "🧲 Aimant actif !" : "";
-        texteCaseActuelle.text = "?";
-        boutonTourner.interactable = true;
+        if (texteNomLot        != null) texteNomLot.text = "";
+        if (texteDescriptionLot != null) texteDescriptionLot.text = "";
+        if (texteResultatSpecial != null)
+        {
+            texteResultatSpecial.text = aimantActif ? "🧲 Aimant actif !" : "";
+            texteResultatSpecial.color = Color.white;
+        }
+        if (texteCaseActuelle != null) texteCaseActuelle.text = "?";
+        if (zoneResultat  != null) zoneResultat.SetActive(false);
+        if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(false);
+    }
+
+    void NouveauTour()
+    {
+        ResetResultat();
+        MettreAJourUI();
     }
 
     // -----------------------------------------------------------------------
@@ -115,9 +167,13 @@ public class MiniRoulette : MonoBehaviour
         if (!GameManager.Instance.UtiliserAimant()) return;
 
         aimantActif = true;
-        boutonUtiliserAimant.interactable = false;
-        texteResultatSpecial.text = "🧲 Aimant actif ! Prochain tour garanti Gain 1000$";
-        texteResultatSpecial.color = UnityEngine.Color.magenta;
+        if (boutonUtiliserAimant != null) boutonUtiliserAimant.interactable = false;
+        if (texteResultatSpecial != null)
+        {
+            texteResultatSpecial.text = "🧲 Aimant actif ! Prochain tour garanti Gain 1000$";
+            texteResultatSpecial.color = UnityEngine.Color.magenta;
+        }
+        MettreAJourUI();
     }
 
     // -----------------------------------------------------------------------
@@ -135,8 +191,11 @@ public class MiniRoulette : MonoBehaviour
 
         if (GameManager.Instance.argent < PRIX_TOUR)
         {
-            texteResultatSpecial.text = "Pas assez d'argent ! (100$ requis)";
-            texteResultatSpecial.color = UnityEngine.Color.red;
+            if (texteErreur != null)
+            {
+                texteErreur.text = "Pas assez d'argent ! (100$ requis)";
+                texteErreur.color = UnityEngine.Color.red;
+            }
             return;
         }
 
@@ -149,10 +208,14 @@ public class MiniRoulette : MonoBehaviour
     IEnumerator AnimerRoulette()
     {
         enRotation = true;
-        boutonTourner.interactable = false;
-        texteNomLot.text = "";
-        texteDescriptionLot.text = "";
-        texteResultatSpecial.text = aimantActif ? "🧲 Aimant actif..." : "";
+        if (boutonTourner  != null) boutonTourner.interactable = false;
+        if (boutonRejouer  != null) boutonRejouer.gameObject.SetActive(false);
+        if (zoneResultat   != null) zoneResultat.SetActive(false);
+        if (texteNomLot        != null) texteNomLot.text = "";
+        if (texteDescriptionLot != null) texteDescriptionLot.text = "";
+        if (texteResultatSpecial != null)
+            texteResultatSpecial.text = aimantActif ? "🧲 Aimant actif..." : "";
+        if (texteErreur != null) texteErreur.text = "";
 
         float dureeTotal = 2.5f;
         float elapsed = 0f;
@@ -163,7 +226,8 @@ public class MiniRoulette : MonoBehaviour
 
         while (elapsed < dureeTotal)
         {
-            texteCaseActuelle.text = nomsAffichage[indexAnim % nomsAffichage.Length];
+            if (texteCaseActuelle != null)
+                texteCaseActuelle.text = nomsAffichage[indexAnim % nomsAffichage.Length];
             indexAnim++;
 
             float ratioTemps = elapsed / dureeTotal;
@@ -174,21 +238,25 @@ public class MiniRoulette : MonoBehaviour
             elapsed += interval;
         }
 
-        // Tirer le lot : aimant force Gain1000$
+        // Tirer le lot
         CaseRoulette lotTire = aimantActif
             ? cases.Find(c => c.type == TypeLot.Gain1000)
             : TirerLot();
 
         aimantActif = false;
-        texteCaseActuelle.text = lotTire.nom;
+        if (texteCaseActuelle != null) texteCaseActuelle.text = lotTire.nom;
 
         yield return new WaitForSeconds(0.3f);
 
         AppliquerLot(lotTire);
         MettreAJourUI();
 
+        // Afficher zone résultat + bouton nouveau tour
+        if (zoneResultat  != null) zoneResultat.SetActive(true);
+        if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(true);
+
         enRotation = false;
-        boutonTourner.interactable = true;
+        if (boutonTourner != null) boutonTourner.interactable = true;
     }
 
     // -----------------------------------------------------------------------
@@ -209,37 +277,33 @@ public class MiniRoulette : MonoBehaviour
     // -----------------------------------------------------------------------
     void AppliquerLot(CaseRoulette lot)
     {
-        texteNomLot.text = lot.nom;
-        texteDescriptionLot.text = lot.description;
+        if (texteNomLot        != null) texteNomLot.text = lot.nom;
+        if (texteDescriptionLot != null) texteDescriptionLot.text = lot.description;
 
         switch (lot.type)
         {
             case TypeLot.NouvellePartieGratuite:
                 partiesGratuitesDisponibles++;
-                texteResultatSpecial.text = "🎟 Partie gratuite ajoutee !";
-                texteResultatSpecial.color = UnityEngine.Color.cyan;
+                if (texteResultatSpecial != null) { texteResultatSpecial.text = "🎟 Partie gratuite ajoutée !"; texteResultatSpecial.color = UnityEngine.Color.cyan; }
                 break;
 
-            case TypeLot.Gain100: AppliquerGain(100f); break;
-            case TypeLot.Gain200: AppliquerGain(200f); break;
-            case TypeLot.Gain500: AppliquerGain(500f); break;
+            case TypeLot.Gain100:  AppliquerGain(100f);  break;
+            case TypeLot.Gain200:  AppliquerGain(200f);  break;
+            case TypeLot.Gain500:  AppliquerGain(500f);  break;
             case TypeLot.Gain1000: AppliquerGain(1000f); break;
 
             case TypeLot.MultiplicateurX2:
                 GameManager.Instance.multiplicateurGain = 2f;
-                texteResultatSpecial.text = "⚡ Multiplicateur x2 actif !";
-                texteResultatSpecial.color = UnityEngine.Color.yellow;
+                if (texteResultatSpecial != null) { texteResultatSpecial.text = "⚡ Multiplicateur x2 actif !"; texteResultatSpecial.color = UnityEngine.Color.yellow; }
                 break;
 
             case TypeLot.MultiplicateurX3:
                 GameManager.Instance.multiplicateurGain = 3f;
-                texteResultatSpecial.text = "⚡ Multiplicateur x3 actif !";
-                texteResultatSpecial.color = UnityEngine.Color.yellow;
+                if (texteResultatSpecial != null) { texteResultatSpecial.text = "⚡ Multiplicateur x3 actif !"; texteResultatSpecial.color = UnityEngine.Color.yellow; }
                 break;
 
             case TypeLot.Perdu:
-                texteResultatSpecial.text = "Perdu... -100$";
-                texteResultatSpecial.color = UnityEngine.Color.red;
+                if (texteResultatSpecial != null) { texteResultatSpecial.text = "Perdu... -100$"; texteResultatSpecial.color = UnityEngine.Color.red; }
                 GameManager.Instance.AjouterFolie(5f);
                 return;
         }
@@ -254,8 +318,11 @@ public class MiniRoulette : MonoBehaviour
             GameManager.Instance.multiplicateurGain = 1f;
 
         GameManager.Instance.AjouterArgent(gainFinal);
-        texteResultatSpecial.text = "+ $" + gainFinal.ToString("N0") + " !";
-        texteResultatSpecial.color = UnityEngine.Color.green;
+        if (texteResultatSpecial != null)
+        {
+            texteResultatSpecial.text = "+ $" + gainFinal.ToString("N0") + " !";
+            texteResultatSpecial.color = UnityEngine.Color.green;
+        }
     }
 
     // -----------------------------------------------------------------------

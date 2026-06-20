@@ -17,9 +17,10 @@ public class CombatCoq : MonoBehaviour
     [Header("Coq A")]
     public TextMeshProUGUI texteNomCoqA;
     public TextMeshProUGUI texteCoteCoqA;
-    public TextMeshProUGUI texteEffetCoqA;   // affiche "ENERGISE !" si boisson donnee
+    public TextMeshProUGUI texteEffetCoqA;
     public Button boutonMiserA;
-    public Button boutonBoisssonA;           // bouton pour donner boisson energisante au coq A
+    public Button boutonBoisssonA;
+    public Image panneauCoqA;
 
     [Header("Coq B")]
     public TextMeshProUGUI texteNomCoqB;
@@ -27,6 +28,7 @@ public class CombatCoq : MonoBehaviour
     public TextMeshProUGUI texteEffetCoqB;
     public Button boutonMiserB;
     public Button boutonBoissonB;
+    public Image panneauCoqB;
 
     [Header("Mise")]
     public TMP_InputField inputMise;
@@ -34,11 +36,18 @@ public class CombatCoq : MonoBehaviour
     public TextMeshProUGUI texteErreurMise;
 
     [Header("Resultat")]
+    public GameObject zoneResultat;
     public TextMeshProUGUI texteResultat;
     public TextMeshProUGUI texteGainResultat;
     public Button boutonLancer;
     public Button boutonRejouer;
     public Button boutonFermer;
+
+    // --- Couleurs surbrillance ---
+    private static readonly Color COULEUR_COQ_A_NORMAL = new Color(0.25f, 0.06f, 0.06f, 1f);
+    private static readonly Color COULEUR_COQ_A_SELEC  = new Color(0.70f, 0.08f, 0.08f, 1f);
+    private static readonly Color COULEUR_COQ_B_NORMAL = new Color(0.08f, 0.08f, 0.08f, 1f);
+    private static readonly Color COULEUR_COQ_B_SELEC  = new Color(0.28f, 0.28f, 0.28f, 1f);
 
     // --- Constantes ---
     private const int MISE_MIN = 5;
@@ -48,9 +57,8 @@ public class CombatCoq : MonoBehaviour
     private CoqData coqB;
 
     // --- Etat de la partie ---
-    private int coqChoisi = -1;   // 0 = coq A, 1 = coq B, -1 = pas encore choisi
+    private int coqChoisi = -1;
     private int miseActuelle = 0;
-    private bool partieEnCours = false;
 
     private PlayerController playerController;
 
@@ -59,19 +67,28 @@ public class CombatCoq : MonoBehaviour
     {
         playerController = Object.FindFirstObjectByType<PlayerController>();
 
-        boutonMiserA.onClick.AddListener(() => ChoisirCoq(0));
-        boutonMiserB.onClick.AddListener(() => ChoisirCoq(1));
-        boutonBoisssonA.onClick.AddListener(() => DonnerBoisson(0));
-        boutonBoissonB.onClick.AddListener(() => DonnerBoisson(1));
-        boutonLancer.onClick.AddListener(LancerCombat);
-        boutonRejouer.onClick.AddListener(NouvellePartie);
-        boutonFermer.onClick.AddListener(FermerPanneau);
+        if (boutonMiserA != null) boutonMiserA.onClick.AddListener(() => ChoisirCoq(0));
+        if (boutonMiserB != null) boutonMiserB.onClick.AddListener(() => ChoisirCoq(1));
+        if (boutonBoisssonA != null) boutonBoisssonA.onClick.AddListener(() => DonnerBoisson(0));
+        if (boutonBoissonB != null) boutonBoissonB.onClick.AddListener(() => DonnerBoisson(1));
+        if (boutonLancer != null) boutonLancer.onClick.AddListener(LancerCombat);
+        if (boutonRejouer != null) boutonRejouer.onClick.AddListener(NouvellePartie);
+        if (boutonFermer != null) boutonFermer.onClick.AddListener(FermerPanneau);
+        if (inputMise != null) inputMise.onValueChanged.AddListener(_ => ActualiserBoutonLancer());
 
-        panneauCombat.SetActive(false);
+        if (panneauCombat != null) panneauCombat.SetActive(false);
     }
 
     // -----------------------------------------------------------------------
-    // Ouverture depuis InteractionSystem
+    void Update()
+    {
+        if (!panneauCombat.activeSelf) return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+            FermerPanneau();
+    }
+
+    // -----------------------------------------------------------------------
     public void OuvrirPanneau()
     {
         if (!GameManager.Instance.PeutJouer()) return;
@@ -86,22 +103,16 @@ public class CombatCoq : MonoBehaviour
     // -----------------------------------------------------------------------
     void NouvellePartie()
     {
-        partieEnCours = false;
         coqChoisi = -1;
         miseActuelle = 0;
 
-        // Generer les deux coqs avec des cotes aleatoires
         coqA = GenererCoq("Coq Rouge");
         coqB = GenererCoq("Coq Noir");
-
-        // S'assurer que les cotes sont coherentes
         NormaliserCotes();
 
-        // Mettre a jour l'UI
         texteNomCoqA.text = coqA.nom;
         texteCoteCoqA.text = "x" + coqA.cote.ToString("F2");
         texteEffetCoqA.text = "";
-
         texteNomCoqB.text = coqB.nom;
         texteCoteCoqB.text = "x" + coqB.cote.ToString("F2");
         texteEffetCoqB.text = "";
@@ -112,13 +123,16 @@ public class CombatCoq : MonoBehaviour
         texteGainResultat.text = "";
         inputMise.text = "";
 
-        // Boutons
         boutonMiserA.interactable = true;
         boutonMiserB.interactable = true;
         boutonBoisssonA.interactable = true;
         boutonBoissonB.interactable = true;
         boutonLancer.interactable = false;
         boutonRejouer.gameObject.SetActive(false);
+
+        if (zoneResultat != null) zoneResultat.SetActive(false);
+
+        AppliquerSurbrillance(-1);
     }
 
     // -----------------------------------------------------------------------
@@ -138,12 +152,36 @@ public class CombatCoq : MonoBehaviour
     void ChoisirCoq(int index)
     {
         coqChoisi = index;
+        AppliquerSurbrillance(index);
+        texteErreurMise.text = (index == 0 ? coqA.nom : coqB.nom) + " sélectionné !";
+        texteErreurMise.color = Color.cyan;
+        ActualiserBoutonLancer();
+    }
 
-        if (!ValiderMise(out miseActuelle)) return;
+    void AppliquerSurbrillance(int index)
+    {
+        if (panneauCoqA != null)
+            panneauCoqA.color = (index == 0) ? COULEUR_COQ_A_SELEC : COULEUR_COQ_A_NORMAL;
+        if (panneauCoqB != null)
+            panneauCoqB.color = (index == 1) ? COULEUR_COQ_B_SELEC : COULEUR_COQ_B_NORMAL;
+    }
+
+    // Active le bouton Lancer dès que la mise est valide, même sans coq choisi
+    void ActualiserBoutonLancer()
+    {
+        if (!int.TryParse(inputMise.text, out int mise) || mise < MISE_MIN)
+        {
+            boutonLancer.interactable = false;
+            return;
+        }
+
+        if (mise > GameManager.Instance.argent)
+        {
+            boutonLancer.interactable = false;
+            return;
+        }
 
         boutonLancer.interactable = true;
-        texteErreurMise.text = (index == 0 ? coqA.nom : coqB.nom) + " selectionne !";
-        texteErreurMise.color = Color.cyan;
     }
 
     bool ValiderMise(out int mise)
@@ -154,7 +192,6 @@ public class CombatCoq : MonoBehaviour
         {
             texteErreurMise.text = "Mise minimum : $" + MISE_MIN;
             texteErreurMise.color = Color.red;
-            boutonLancer.interactable = false;
             return false;
         }
 
@@ -162,18 +199,15 @@ public class CombatCoq : MonoBehaviour
         {
             texteErreurMise.text = "Pas assez d'argent !";
             texteErreurMise.color = Color.red;
-            boutonLancer.interactable = false;
             return false;
         }
 
-        texteErreurMise.text = "";
         return true;
     }
 
     // -----------------------------------------------------------------------
     void DonnerBoisson(int index)
     {
-        // Verifier que le joueur a une boisson dans son inventaire
         if (!GameManager.Instance.UtiliserBoisson())
         {
             texteErreurMise.text = "Vous n'avez pas de boisson energisante !";
@@ -195,7 +229,6 @@ public class CombatCoq : MonoBehaviour
         }
 
         texteErreurMise.text = "";
-        // Ajouter un peu de folie (tricher c'est stressant)
         GameManager.Instance.AjouterFolie(3f);
     }
 
@@ -210,11 +243,8 @@ public class CombatCoq : MonoBehaviour
             return;
         }
 
-        partieEnCours = true;
         boutonMiserA.interactable = false;
         boutonMiserB.interactable = false;
-        boutonBoisssonA.interactable = false;
-        boutonBoissonB.interactable = false;
         boutonLancer.interactable = false;
 
         GameManager.Instance.RetirerArgent(miseActuelle);
@@ -227,12 +257,14 @@ public class CombatCoq : MonoBehaviour
     {
         texteResultat.text = "Combat en cours...";
         texteResultat.color = Color.white;
+        texteGainResultat.text = "";
+
+        if (zoneResultat != null) zoneResultat.SetActive(true);
 
         yield return new WaitForSeconds(2f);
 
         int indexGagnant = DeterminerVainqueur();
         CoqData gagnant = indexGagnant == 0 ? coqA : coqB;
-
         bool joueurAGagne = (coqChoisi == indexGagnant);
         float gain = joueurAGagne ? Mathf.Floor(miseActuelle * gagnant.cote) : 0f;
 
@@ -240,7 +272,7 @@ public class CombatCoq : MonoBehaviour
 
         if (joueurAGagne)
         {
-            texteGainResultat.text = "GAGNE ! +" + gain + "$";
+            texteGainResultat.text = "GAGNÉ ! +" + gain + "$";
             texteGainResultat.color = Color.green;
             GameManager.Instance.AjouterArgent(gain);
             GameManager.Instance.AjouterFolie(4f);
@@ -254,21 +286,17 @@ public class CombatCoq : MonoBehaviour
 
         texteArgentDisponible.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
         boutonRejouer.gameObject.SetActive(true);
-        partieEnCours = false;
     }
 
     // -----------------------------------------------------------------------
     int DeterminerVainqueur()
     {
-        // Regle de triche : coq energise gagne automatiquement
         if (coqA.energise && !coqB.energise) return 0;
         if (coqB.energise && !coqA.energise) return 1;
 
-        // Si les deux sont energises ou aucun : probabilites basees sur les cotes
         float probA = 1f / coqA.cote;
         float probB = 1f / coqB.cote;
         float seuil = probA / (probA + probB);
-
         return Random.value < seuil ? 0 : 1;
     }
 
