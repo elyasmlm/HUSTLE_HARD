@@ -105,7 +105,11 @@ public class InteractionSystem : MonoBehaviour
                 return;
             }
 
-            if (nom.Equals("TicketGrattage", System.StringComparison.OrdinalIgnoreCase))
+            if (nom.Equals("TicketGrattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Faire un grattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Grattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Ticket Grattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Ticket de grattage", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (ticketGrattage != null) ticketGrattage.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] TicketGrattage non assigné dans l'Inspector !");
