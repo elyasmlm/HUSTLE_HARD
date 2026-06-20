@@ -15,6 +15,8 @@ public class InteractionSystem : MonoBehaviour
     public TicketGrattage ticketGrattage;
     public Blackjack blackjack;
     public MiniRoulette miniRoulette;
+    public DAB dab;
+    public AchatViagra achatViagra;
 
     private Camera cam;
     private GameObject objetCible;
@@ -35,6 +37,10 @@ public class InteractionSystem : MonoBehaviour
             blackjack = Object.FindFirstObjectByType<Blackjack>();
         if (miniRoulette == null)
             miniRoulette = Object.FindFirstObjectByType<MiniRoulette>();
+        if (dab == null)
+            dab = Object.FindFirstObjectByType<DAB>();
+        if (achatViagra == null)
+            achatViagra = Object.FindFirstObjectByType<AchatViagra>();
     }
 
     void Update()
@@ -61,14 +67,24 @@ public class InteractionSystem : MonoBehaviour
                 objetCible = touche.collider.gameObject;
                 ObjetInteractif obj = objetCible.GetComponent<ObjetInteractif>();
                 PorteTransition porte = objetCible.GetComponent<PorteTransition>();
+                PouletScene poulet = objetCible.GetComponent<PouletScene>();
                 string nom;
                 if (porte != null && porte.nomAffichage != "")
                     nom = porte.nomAffichage;
+                else if (poulet != null)
+                    nom = poulet.EstDope()
+                        ? (poulet.indexCoq == 0 ? CombatCoq.NOM_COQ_A : CombatCoq.NOM_COQ_B) + " (dope)"
+                        : GameManager.Instance.viagra > 0
+                            ? "[E] Doper " + (poulet.indexCoq == 0 ? CombatCoq.NOM_COQ_A : CombatCoq.NOM_COQ_B)
+                            : (poulet.indexCoq == 0 ? CombatCoq.NOM_COQ_A : CombatCoq.NOM_COQ_B);
                 else if (obj != null && obj.nomAffichage != "")
                     nom = obj.nomAffichage;
                 else
                     nom = objetCible.name;
-                texteInteraction.text = "[E] " + nom;
+
+                texteInteraction.text = poulet != null && !poulet.EstDope() && GameManager.Instance.viagra > 0
+                    ? nom
+                    : "[E] " + nom;
                 return;
             }
         }
@@ -87,6 +103,23 @@ public class InteractionSystem : MonoBehaviour
             return;
         }
 
+        // Poulet dopable
+        PouletScene poulet = objet.GetComponent<PouletScene>();
+        if (poulet != null)
+        {
+            if (GameManager.Instance.viagra <= 0)
+            {
+                if (texteInteraction != null)
+                    texteInteraction.text = "Achetez du Viagra d'abord !";
+                return;
+            }
+
+            bool succes = poulet.TenterDoper();
+            if (succes && texteInteraction != null)
+                texteInteraction.text = "Poulet dope !";
+            return;
+        }
+
         // Dispatch par nomMinijeu
         ObjetInteractif obj = objet.GetComponent<ObjetInteractif>();
         if (obj != null)
@@ -98,14 +131,14 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("Combat de coq", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (combatCoq != null) combatCoq.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] CombatCoq non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] CombatCoq non assignï¿½ dans l'Inspector !");
                 return;
             }
 
             if (nom.Equals("TicketGrattage", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (ticketGrattage != null) ticketGrattage.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] TicketGrattage non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] TicketGrattage non assignï¿½ dans l'Inspector !");
                 return;
             }
 
@@ -114,7 +147,7 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("BlackJack", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (blackjack != null) blackjack.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] Blackjack non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] Blackjack non assignï¿½ dans l'Inspector !");
                 return;
             }
 
@@ -125,7 +158,27 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("Roulette Mini", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (miniRoulette != null) miniRoulette.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] MiniRoulette non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] MiniRoulette non assignï¿½ dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("AchatViagra", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Achat Viagra", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Pharmacie", System.StringComparison.OrdinalIgnoreCase))
+            {
+                AchatViagra av = objet.GetComponent<AchatViagra>();
+                if (av == null) av = Object.FindFirstObjectByType<AchatViagra>();
+                if (av != null) av.OuvrirPanneau();
+                return;
+            }
+
+            if (nom.Equals("DAB", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Distributeur", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("DAB Bancaire", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Distributeur de billets", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (dab != null) dab.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] DAB non assigne dans l'Inspector !");
                 return;
             }
 

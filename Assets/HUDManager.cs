@@ -14,6 +14,9 @@ public class HUDManager : MonoBehaviour
     public RectTransform barreFolieFill;
     public TextMeshProUGUI texteFolie;
 
+    [Header("Inventaire")]
+    public TextMeshProUGUI texteInventaire;
+
     private float largeurMaxBarre = 200f;
 
     private float argent = 1250f;
@@ -49,5 +52,21 @@ public class HUDManager : MonoBehaviour
         if (folie < 40f) imgFolie.color = Color.green;
         else if (folie < 70f) imgFolie.color = Color.yellow;
         else imgFolie.color = Color.red;
+
+        if (texteInventaire != null)
+        {
+            var gm = GameManager.Instance;
+            var lignes = new System.Text.StringBuilder();
+            lignes.AppendLine("INVENTAIRE");
+
+            bool vide = true;
+            if (gm.boissonEnergisante > 0) { lignes.AppendLine("- Boisson x" + gm.boissonEnergisante); vide = false; }
+            if (gm.zdeh    > 0) { lignes.AppendLine("- Zdeh x" + gm.zdeh);    vide = false; }
+            if (gm.aimants > 0) { lignes.AppendLine("- Aimant x" + gm.aimants); vide = false; }
+            if (gm.viagra  > 0) { lignes.AppendLine("- Viagra x" + gm.viagra); vide = false; }
+            if (vide) lignes.AppendLine("(vide)");
+
+            texteInventaire.text = lignes.ToString().TrimEnd();
+        }
     }
 }

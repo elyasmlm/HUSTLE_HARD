@@ -12,7 +12,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Economie")]
     public float argent = 500f;
+    public float compte = 0f;
     public float dette = 35000f;
+    [HideInInspector] public float detteInitiale = 35000f;
 
     [Header("Timer")]
     public float tempsRestant = 1440f;
@@ -28,6 +30,7 @@ public class GameManager : MonoBehaviour
     public int boissonEnergisante = 0;
     public int zdeh = 0;
     public int aimants = 0;
+    public int viagra = 0;
 
     [Header("Inventaire cosmetiques")]
     public int chapeauxCommuns = 0;
@@ -50,6 +53,7 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        detteInitiale = dette;
         PlayerPrefs.SetString("SpawnPoint", "SpawnPointDepart");
     }
 
@@ -73,14 +77,27 @@ public class GameManager : MonoBehaviour
     public void AjouterArgent(float montant)
     {
         argent += montant;
-        if (argent >= dette)
-            Victoire();
     }
 
     public void RetirerArgent(float montant)
     {
         argent -= montant;
+        if (argent < 0f) argent = 0f;
     }
+
+    public void AjouterCompte(float montant)
+    {
+        compte += montant;
+        if (compte >= dette)
+            Victoire();
+    }
+
+    public void RetirerCompte(float montant)
+    {
+        compte -= montant;
+        if (compte < 0f) compte = 0f;
+    }
+
 
     // --- Folie ---
 
@@ -152,6 +169,42 @@ public class GameManager : MonoBehaviour
     public void AjouterAimant(int quantite = 1)
     {
         aimants += quantite;
+    }
+
+    public const int VIAGRA_MAX = 1;
+
+    public void AjouterViagra(int quantite = 1)
+    {
+        viagra = Mathf.Min(viagra + quantite, VIAGRA_MAX);
+    }
+
+    public bool UtiliserViagra()
+    {
+        if (viagra <= 0) return false;
+        viagra--;
+        return true;
+    }
+
+    // --- Poulets dopes (triche combat de coq) ---
+    // index 0 = MasterPoulet, 1 = PouletBraise
+
+    [HideInInspector] public bool[] pouletsDopes = new bool[2];
+
+    public void DoperPoulet(int index)
+    {
+        if (index >= 0 && index < pouletsDopes.Length)
+            pouletsDopes[index] = true;
+    }
+
+    public bool EstPouletDope(int index)
+    {
+        return index >= 0 && index < pouletsDopes.Length && pouletsDopes[index];
+    }
+
+    public void ResetPouletDope(int index)
+    {
+        if (index >= 0 && index < pouletsDopes.Length)
+            pouletsDopes[index] = false;
     }
 
     /// <summary>
