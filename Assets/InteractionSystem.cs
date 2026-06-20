@@ -15,6 +15,7 @@ public class InteractionSystem : MonoBehaviour
     public TicketGrattage ticketGrattage;
     public Blackjack blackjack;
     public MiniRoulette miniRoulette;
+    public CaseOpening caseOpening;
 
     private Camera cam;
     private GameObject objetCible;
@@ -35,6 +36,8 @@ public class InteractionSystem : MonoBehaviour
             blackjack = Object.FindFirstObjectByType<Blackjack>();
         if (miniRoulette == null)
             miniRoulette = Object.FindFirstObjectByType<MiniRoulette>();
+        if (caseOpening == null)
+            caseOpening = Object.FindFirstObjectByType<CaseOpening>();
     }
 
     void Update()
@@ -126,6 +129,16 @@ public class InteractionSystem : MonoBehaviour
             {
                 if (miniRoulette != null) miniRoulette.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] MiniRoulette non assigné dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("CaseOpening", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Case Opening", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Caisse", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("CaisseOpening", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (caseOpening != null) caseOpening.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] CaseOpening non assigné dans l'Inspector !");
                 return;
             }
 
