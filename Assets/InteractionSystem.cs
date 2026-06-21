@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 
 public class InteractionSystem : MonoBehaviour
@@ -16,6 +16,7 @@ public class InteractionSystem : MonoBehaviour
     public Blackjack blackjack;
     public MiniRoulette miniRoulette;
     public CaseOpening caseOpening;
+    public LivreurPizza livreurPizza;
 
     private Camera cam;
     private GameObject objetCible;
@@ -38,6 +39,8 @@ public class InteractionSystem : MonoBehaviour
             miniRoulette = Object.FindFirstObjectByType<MiniRoulette>();
         if (caseOpening == null)
             caseOpening = Object.FindFirstObjectByType<CaseOpening>();
+        if (livreurPizza == null)
+            livreurPizza = Object.FindFirstObjectByType<LivreurPizza>(FindObjectsInactive.Include);
     }
 
     void Update()
@@ -53,7 +56,7 @@ public class InteractionSystem : MonoBehaviour
     void DetecterObjet()
     {
         if (cam == null) cam = GetComponentInChildren<Camera>();
-        if (cam == null) { Debug.Log("CAM NULL"); return; }
+        if (cam == null) { Debug.LogError("[Interaction] CAM NULL sur " + gameObject.name); return; }
 
         Ray rayon = new Ray(cam.transform.position, cam.transform.forward);
         RaycastHit touche;
@@ -71,13 +74,19 @@ public class InteractionSystem : MonoBehaviour
                     nom = obj.nomAffichage;
                 else
                     nom = objetCible.name;
-                texteInteraction.text = "[E] " + nom;
+                if (texteInteraction != null) texteInteraction.text = "[E] " + nom;
                 return;
+            }
+            else
+            {
+                // Raycast touche qqch mais pas Interactable
+                Debug.Log("[Interaction] Raycast touche '" + touche.collider.gameObject.name
+                    + "' tag=" + touche.collider.tag + " (pas Interactable)");
             }
         }
 
         objetCible = null;
-        texteInteraction.text = "";
+        if (texteInteraction != null) texteInteraction.text = "";
     }
 
     void Interagir(GameObject objet)
@@ -101,7 +110,7 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("Combat de coq", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (combatCoq != null) combatCoq.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] CombatCoq non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] CombatCoq non assignï¿½ dans l'Inspector !");
                 return;
             }
 
@@ -112,7 +121,7 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("Ticket de grattage", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (ticketGrattage != null) ticketGrattage.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] TicketGrattage non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] TicketGrattage non assignï¿½ dans l'Inspector !");
                 return;
             }
 
@@ -121,7 +130,7 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("BlackJack", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (blackjack != null) blackjack.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] Blackjack non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] Blackjack non assignï¿½ dans l'Inspector !");
                 return;
             }
 
@@ -132,7 +141,7 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("Roulette Mini", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (miniRoulette != null) miniRoulette.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] MiniRoulette non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] MiniRoulette non assignï¿½ dans l'Inspector !");
                 return;
             }
 
@@ -142,7 +151,20 @@ public class InteractionSystem : MonoBehaviour
                 nom.Equals("CaisseOpening", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (caseOpening != null) caseOpening.OuvrirPanneau();
-                else Debug.LogWarning("[InteractionSystem] CaseOpening non assigné dans l'Inspector !");
+                else Debug.LogWarning("[InteractionSystem] CaseOpening non assignï¿½ dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("LivreurPizza", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Livreur Pizza", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Livreur de Pizza", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Livraison", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Scooter", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Pizza", System.StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.Log("[Interaction] Dispatch LivreurPizza â€“ ref=" + (livreurPizza != null ? livreurPizza.name : "NULL"));
+                if (livreurPizza != null) livreurPizza.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] LivreurPizza non assignÃ© ! Glissez le controller dans l'Inspector.");
                 return;
             }
 
