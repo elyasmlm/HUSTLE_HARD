@@ -94,12 +94,15 @@ public class EcranFin : MonoBehaviour
     {
         Time.timeScale = 1f;
         IntroAppel.ReinitialiserIntro();
+        PlayerPrefs.SetString("SpawnPoint", "SpawnPointDepart");
+        Persistent.DetruireInstance();
         SceneManager.LoadScene(sceneJeu);
     }
 
     void MenuPrincipal()
     {
         Time.timeScale = 1f;
+        Persistent.DetruireInstance();
         SceneManager.LoadScene(sceneMenuPrincipal);
     }
 

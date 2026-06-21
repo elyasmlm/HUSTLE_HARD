@@ -41016,7 +41016,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   argent: 500
   compte: 0
-  dette: 1000
+  dette: 35000
   detteInitiale: 35000
   tempsRestant: 1440
   folie: 0

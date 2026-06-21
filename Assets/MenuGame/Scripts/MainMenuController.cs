@@ -31,6 +31,8 @@ namespace MenuGame
         public void OnPlayClicked()
         {
             IntroAppel.ReinitialiserIntro();
+            PlayerPrefs.SetString("SpawnPoint", "SpawnPointDepart");
+            Persistent.DetruireInstance();
             SceneManager.LoadScene(gameplaySceneName);
         }
 

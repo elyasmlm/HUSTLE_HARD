@@ -75,6 +75,8 @@ public class PauseMenu : MonoBehaviour
     {
         Time.timeScale = 1f;
         IntroAppel.ReinitialiserIntro();
+        PlayerPrefs.SetString("SpawnPoint", "SpawnPointDepart");
+        Persistent.DetruireInstance();   // repart d'un etat neuf
         SceneManager.LoadScene(sceneNouvellePartie);
     }
 
@@ -94,8 +96,10 @@ public class PauseMenu : MonoBehaviour
 
     public void Quitter()
     {
-        // Retour a la page d'accueil.
+        // Retour a la page d'accueil : on detruit l'etat pour que la prochaine
+        // partie reparte de zero.
         Time.timeScale = 1f;
+        Persistent.DetruireInstance();
         SceneManager.LoadScene(sceneMenuPrincipal);
     }
 }
