@@ -55,16 +55,33 @@ public class LivreurPizza : MonoBehaviour
     {
         playerController = Object.FindFirstObjectByType<PlayerController>();
 
-        boutonCommencer.onClick.AddListener(CommencerPartie);
-        boutonRejouer.onClick.AddListener(ResetPartie);
-        boutonFermer.onClick.AddListener(FermerPanneau);
+        if (boutonCommencer != null) boutonCommencer.onClick.AddListener(CommencerPartie);
+        else Debug.LogWarning("[LivreurPizza] boutonCommencer est null !");
+        if (boutonRejouer != null)   boutonRejouer.onClick.AddListener(ResetPartie);
+        else Debug.LogWarning("[LivreurPizza] boutonRejouer est null !");
+        if (boutonFermer != null)    boutonFermer.onClick.AddListener(FermerPanneau);
+        else Debug.LogWarning("[LivreurPizza] boutonFermer est null !");
 
-        panneauLivreur.SetActive(false);
+        if (panneauLivreur != null) panneauLivreur.SetActive(false);
+        else Debug.LogWarning("[LivreurPizza] panneauLivreur est null !");
+    }
+
+    // -----------------------------------------------------------------------
+    private bool PeutJouer()
+    {
+        if (panneauLivreur == null)    { Debug.LogWarning("[LivreurPizza] panneauLivreur manquant.");    return false; }
+        if (joueurIcon == null)         { Debug.LogWarning("[LivreurPizza] joueurIcon manquant.");         return false; }
+        if (sortieIcon == null)         { Debug.LogWarning("[LivreurPizza] sortieIcon manquant.");         return false; }
+        if (panneauLabyrinthe == null)  { Debug.LogWarning("[LivreurPizza] panneauLabyrinthe manquant."); return false; }
+        if (texteTimer == null)         { Debug.LogWarning("[LivreurPizza] texteTimer manquant.");         return false; }
+        return true;
     }
 
     // -----------------------------------------------------------------------
     public void OuvrirPanneau()
     {
+        if (!PeutJouer()) return;
+
         panneauLivreur.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -80,16 +97,15 @@ public class LivreurPizza : MonoBehaviour
         partieTerminee = false;
         tempsRestant = DUREE_MAX;
 
-        panneauLabyrinthe.SetActive(false);
-        texteResultat.text = "";
-        texteGain.text = "";
-        texteTimer.text = "1:00";
-        texteInstruction.text = "Livrez la pizza avant la fin du temps !";
+        if (panneauLabyrinthe != null) panneauLabyrinthe.SetActive(false);
+        if (texteResultat    != null) texteResultat.text    = "";
+        if (texteGain        != null) texteGain.text        = "";
+        if (texteTimer       != null) texteTimer.text       = "1:00";
+        if (texteInstruction != null) texteInstruction.text = "Livrez la pizza avant la fin du temps !";
 
-        boutonCommencer.gameObject.SetActive(true);
-        boutonRejouer.gameObject.SetActive(false);
+        if (boutonCommencer != null) boutonCommencer.gameObject.SetActive(true);
+        if (boutonRejouer   != null) boutonRejouer.gameObject.SetActive(false);
 
-        // Repositionner le joueur a l'entree du labyrinthe
         if (joueurIcon != null)
             joueurIcon.anchoredPosition = EntreeLabyrinthe();
 
@@ -98,7 +114,8 @@ public class LivreurPizza : MonoBehaviour
 
     void MettreAJourArgent()
     {
-        texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+        if (texteArgent != null && GameManager.Instance != null)
+            texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
     }
 
     // -----------------------------------------------------------------------
@@ -116,6 +133,12 @@ public class LivreurPizza : MonoBehaviour
     // -----------------------------------------------------------------------
     void Update()
     {
+        if (panneauLivreur != null && panneauLivreur.activeSelf && Input.GetKeyDown(KeyCode.Escape))
+        {
+            FermerPanneau();
+            return;
+        }
+
         if (!partieEnCours || partieTerminee) return;
 
         // --- Timer ---
@@ -131,9 +154,9 @@ public class LivreurPizza : MonoBehaviour
 
         // --- Deplacement joueur (fleches ou ZQSD) ---
         Vector2 direction = Vector2.zero;
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.Z)) direction += Vector2.up;
-        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) direction += Vector2.down;
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.Q)) direction += Vector2.left;
+        if (Input.GetKey(KeyCode.UpArrow)    || Input.GetKey(KeyCode.W)) direction += Vector2.up;
+        if (Input.GetKey(KeyCode.DownArrow)  || Input.GetKey(KeyCode.S)) direction += Vector2.down;
+        if (Input.GetKey(KeyCode.LeftArrow)  || Input.GetKey(KeyCode.A)) direction += Vector2.left;
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) direction += Vector2.right;
 
         if (direction != Vector2.zero)
@@ -202,14 +225,14 @@ public class LivreurPizza : MonoBehaviour
             GameManager.Instance.AjouterArgent(gain);
             MettreAJourArgent();
 
-            texteResultat.text = "🍕 Pizza livree !";
+            texteResultat.text = "Pizza livree !";
             texteResultat.color = Color.green;
             texteGain.text = "+ $" + gain + " (temps restant : " + Mathf.CeilToInt(tempsRestant) + "s)";
             texteGain.color = Color.green;
         }
         else
         {
-            texteResultat.text = "⏰ Temps ecoule ! Pizza froide...";
+            texteResultat.text = "Temps ecoule ! Pizza froide...";
             texteResultat.color = Color.red;
             texteGain.text = "Aucune recompense.";
             texteGain.color = Color.gray;
@@ -231,11 +254,11 @@ public class LivreurPizza : MonoBehaviour
     /// </summary>
     Vector2 EntreeLabyrinthe()
     {
-        return new Vector2(-200f, -200f);
+        return new Vector2(-300f, 165f);
     }
 
     // -----------------------------------------------------------------------
-    void FermerPanneau()
+    public void FermerPanneau()
     {
         partieEnCours = false;
         panneauLivreur.SetActive(false);
