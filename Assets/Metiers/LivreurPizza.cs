@@ -154,9 +154,9 @@ public class LivreurPizza : MonoBehaviour
 
         // --- Deplacement joueur (fleches ou ZQSD) ---
         Vector2 direction = Vector2.zero;
-        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.Z)) direction += Vector2.up;
-        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) direction += Vector2.down;
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.Q)) direction += Vector2.left;
+        if (Input.GetKey(KeyCode.UpArrow)    || Input.GetKey(KeyCode.W)) direction += Vector2.up;
+        if (Input.GetKey(KeyCode.DownArrow)  || Input.GetKey(KeyCode.S)) direction += Vector2.down;
+        if (Input.GetKey(KeyCode.LeftArrow)  || Input.GetKey(KeyCode.A)) direction += Vector2.left;
         if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) direction += Vector2.right;
 
         if (direction != Vector2.zero)
@@ -225,14 +225,14 @@ public class LivreurPizza : MonoBehaviour
             GameManager.Instance.AjouterArgent(gain);
             MettreAJourArgent();
 
-            texteResultat.text = "🍕 Pizza livree !";
+            texteResultat.text = "Pizza livree !";
             texteResultat.color = Color.green;
             texteGain.text = "+ $" + gain + " (temps restant : " + Mathf.CeilToInt(tempsRestant) + "s)";
             texteGain.color = Color.green;
         }
         else
         {
-            texteResultat.text = "⏰ Temps ecoule ! Pizza froide...";
+            texteResultat.text = "Temps ecoule ! Pizza froide...";
             texteResultat.color = Color.red;
             texteGain.text = "Aucune recompense.";
             texteGain.color = Color.gray;
@@ -254,7 +254,7 @@ public class LivreurPizza : MonoBehaviour
     /// </summary>
     Vector2 EntreeLabyrinthe()
     {
-        return new Vector2(-200f, -200f);
+        return new Vector2(-300f, 165f);
     }
 
     // -----------------------------------------------------------------------

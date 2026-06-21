@@ -121,7 +121,7 @@ public static class CreateLivreurPizzaUIEditor
 
         // Joueur (carré orange)
         lp.joueurIcon = MakeIconRect(labyGO.transform, "JoueurIcon",
-            new Vector2(-180f, -140f), new Vector2(32f, 32f),
+            new Vector2(-300f, 165f), new Vector2(32f, 32f),
             new Color(0.95f, 0.55f, 0.05f, 1f), "P");
 
         // Sortie (carré vert)
