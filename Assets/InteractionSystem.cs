@@ -17,6 +17,7 @@ public class InteractionSystem : MonoBehaviour
     public MiniRoulette miniRoulette;
     public CaseOpening caseOpening;
     public LivreurPizza livreurPizza;
+    public LavageVoiture lavageVoiture;
 
     private Camera cam;
     private GameObject objetCible;
@@ -41,6 +42,8 @@ public class InteractionSystem : MonoBehaviour
             caseOpening = Object.FindFirstObjectByType<CaseOpening>();
         if (livreurPizza == null)
             livreurPizza = Object.FindFirstObjectByType<LivreurPizza>(FindObjectsInactive.Include);
+        if (lavageVoiture == null)
+            lavageVoiture = Object.FindFirstObjectByType<LavageVoiture>(FindObjectsInactive.Include);
     }
 
     void Update()
@@ -165,6 +168,20 @@ public class InteractionSystem : MonoBehaviour
                 Debug.Log("[Interaction] Dispatch LivreurPizza – ref=" + (livreurPizza != null ? livreurPizza.name : "NULL"));
                 if (livreurPizza != null) livreurPizza.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] LivreurPizza non assigné ! Glissez le controller dans l'Inspector.");
+                return;
+            }
+
+            if (nom.Equals("LavageVoiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Lavage Voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Lavage de Voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Lavage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("CarWash", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Nettoyeur de voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Nettoyeur", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (lavageVoiture != null) lavageVoiture.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] LavageVoiture non assigné ! Glissez le controller dans l'Inspector.");
                 return;
             }
 

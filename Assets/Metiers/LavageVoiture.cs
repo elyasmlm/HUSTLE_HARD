@@ -67,21 +67,57 @@ public class LavageVoiture : MonoBehaviour
     {
         playerController = Object.FindFirstObjectByType<PlayerController>();
 
-        boutonCommencer.onClick.AddListener(CommencerPartie);
-        boutonRejouer.onClick.AddListener(ResetPartie);
-        boutonFermer.onClick.AddListener(FermerPanneau);
+        if (panneauLavage == null)
+            Debug.LogWarning("[LavageVoiture] panneauLavage est null !");
+        if (voitureRect == null)
+            Debug.LogWarning("[LavageVoiture] voitureRect est null !");
+        if (voitureSale == null)
+            Debug.LogWarning("[LavageVoiture] voitureSale est null !");
+        if (voiturePropre == null)
+            Debug.LogWarning("[LavageVoiture] voiturePropre est null !");
+        if (epongeIcon == null)
+            Debug.LogWarning("[LavageVoiture] epongeIcon est null !");
+        if (barrePropirete == null)
+            Debug.LogWarning("[LavageVoiture] barrePropirete est null !");
+        if (texteTimer == null)
+            Debug.LogWarning("[LavageVoiture] texteTimer est null !");
+        if (textePourcentage == null)
+            Debug.LogWarning("[LavageVoiture] textePourcentage est null !");
 
-        panneauLavage.SetActive(false);
+        if (boutonCommencer != null) boutonCommencer.onClick.AddListener(CommencerPartie);
+        else Debug.LogWarning("[LavageVoiture] boutonCommencer est null !");
+        if (boutonRejouer != null) boutonRejouer.onClick.AddListener(ResetPartie);
+        else Debug.LogWarning("[LavageVoiture] boutonRejouer est null !");
+        if (boutonFermer != null) boutonFermer.onClick.AddListener(FermerPanneau);
+        else Debug.LogWarning("[LavageVoiture] boutonFermer est null !");
+
+        if (panneauLavage != null) panneauLavage.SetActive(false);
+    }
+
+    // -----------------------------------------------------------------------
+    private bool PeutJouer()
+    {
+        if (panneauLavage == null)   { Debug.LogWarning("[LavageVoiture] panneauLavage manquant.");   return false; }
+        if (voitureRect == null)     { Debug.LogWarning("[LavageVoiture] voitureRect manquant.");     return false; }
+        if (voitureSale == null)     { Debug.LogWarning("[LavageVoiture] voitureSale manquant.");     return false; }
+        if (voiturePropre == null)   { Debug.LogWarning("[LavageVoiture] voiturePropre manquant.");   return false; }
+        if (epongeIcon == null)      { Debug.LogWarning("[LavageVoiture] epongeIcon manquant.");      return false; }
+        if (barrePropirete == null)  { Debug.LogWarning("[LavageVoiture] barrePropirete manquant."); return false; }
+        if (texteTimer == null)      { Debug.LogWarning("[LavageVoiture] texteTimer manquant.");      return false; }
+        if (textePourcentage == null){ Debug.LogWarning("[LavageVoiture] textePourcentage manquant."); return false; }
+        return true;
     }
 
     // -----------------------------------------------------------------------
     public void OuvrirPanneau()
     {
+        if (!PeutJouer()) return;
         panneauLavage.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         if (playerController != null) playerController.menuOuvert = true;
 
+        MettreAJourArgent();
         ResetPartie();
     }
 
@@ -114,22 +150,22 @@ public class LavageVoiture : MonoBehaviour
         if (epongeIcon != null)
             epongeIcon.gameObject.SetActive(false);
 
-        textePourcentage.text = "0%";
-        texteTimer.text = "1:30";
-        texteTimer.color = Color.white;
-        texteResultat.text = "";
-        texteGain.text = "";
-        texteInstruction.text = "Maintenez le clic et frottez la voiture !";
+        if (textePourcentage != null) textePourcentage.text  = "0%";
+        if (texteTimer != null)       { texteTimer.text = "1:30"; texteTimer.color = Color.white; }
+        if (texteResultat != null)    texteResultat.text    = "";
+        if (texteGain != null)        texteGain.text        = "";
+        if (texteInstruction != null) texteInstruction.text = "Maintenez le clic et frottez la voiture !";
 
-        boutonCommencer.gameObject.SetActive(true);
-        boutonRejouer.gameObject.SetActive(false);
+        if (boutonCommencer != null) boutonCommencer.gameObject.SetActive(true);
+        if (boutonRejouer   != null) boutonRejouer.gameObject.SetActive(false);
 
         MettreAJourArgent();
     }
 
     void MettreAJourArgent()
     {
-        texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+        if (texteArgent != null && GameManager.Instance != null)
+            texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
     }
 
     // -----------------------------------------------------------------------
@@ -143,6 +179,12 @@ public class LavageVoiture : MonoBehaviour
     // -----------------------------------------------------------------------
     void Update()
     {
+        if (panneauLavage != null && panneauLavage.activeSelf && Input.GetKeyDown(KeyCode.Escape))
+        {
+            FermerPanneau();
+            return;
+        }
+
         if (!partieEnCours) return;
 
         tempsRestant -= Time.deltaTime;
@@ -205,7 +247,8 @@ public class LavageVoiture : MonoBehaviour
     {
         if (barrePropirete != null)
             barrePropirete.value = proprete;
-        textePourcentage.text = Mathf.RoundToInt(proprete) + "%";
+        if (textePourcentage != null)
+            textePourcentage.text = Mathf.RoundToInt(proprete) + "%";
 
         float ratio = proprete / 100f;
         if (voitureSale != null)
@@ -221,17 +264,21 @@ public class LavageVoiture : MonoBehaviour
             voiturePropre.color = c;
         }
 
-        if (proprete < 30f)
-            texteInstruction.text = "Continuez a frotter !";
-        else if (proprete < 70f)
-            texteInstruction.text = "Bien ! Continuez...";
-        else if (proprete < 100f)
-            texteInstruction.text = "Presque propre !";
+        if (texteInstruction != null)
+        {
+            if (proprete < 30f)
+                texteInstruction.text = "Continuez a frotter !";
+            else if (proprete < 70f)
+                texteInstruction.text = "Bien ! Continuez...";
+            else if (proprete < 100f)
+                texteInstruction.text = "Presque propre !";
+        }
     }
 
     // -----------------------------------------------------------------------
     void AfficherTimer()
     {
+        if (texteTimer == null) return;
         int minutes = Mathf.FloorToInt(tempsRestant / 60f);
         int secondes = Mathf.CeilToInt(tempsRestant % 60f);
         texteTimer.text = string.Format("{0}:{1:00}", minutes, secondes);
@@ -249,49 +296,45 @@ public class LavageVoiture : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        boutonRejouer.gameObject.SetActive(true);
+        if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(true);
 
         if (victoire)
         {
             float ratio = tempsRestant / DUREE_MAX;
             int gain = Mathf.RoundToInt(Mathf.Lerp(GAIN_MIN, GAIN_MAX, ratio));
 
-            GameManager.Instance.AjouterArgent(gain);
+            if (GameManager.Instance != null) GameManager.Instance.AjouterArgent(gain);
             MettreAJourArgent();
 
-            texteResultat.text = "🚗 Voiture impeccable !";
-            texteResultat.color = Color.green;
-            texteGain.text = "+ $" + gain + " (temps restant : " + Mathf.CeilToInt(tempsRestant) + "s)";
-            texteGain.color = Color.green;
+            if (texteResultat != null) { texteResultat.text = "Voiture impeccable !"; texteResultat.color = Color.green; }
+            if (texteGain     != null) { texteGain.text = "+ $" + gain + " (temps restant : " + Mathf.CeilToInt(tempsRestant) + "s)"; texteGain.color = Color.green; }
         }
         else
         {
             if (proprete >= 50f)
             {
                 int gainPartiel = Mathf.RoundToInt(GAIN_MIN / 2f);
-                GameManager.Instance.AjouterArgent(gainPartiel);
+                if (GameManager.Instance != null) GameManager.Instance.AjouterArgent(gainPartiel);
                 MettreAJourArgent();
 
-                texteResultat.text = "⏰ Temps ecoule ! Voiture a moitie propre.";
-                texteResultat.color = Color.yellow;
-                texteGain.text = "+ $" + gainPartiel + " (travail incomplet)";
-                texteGain.color = Color.yellow;
+                if (texteResultat != null) { texteResultat.text = "Temps ecoule ! Voiture a moitie propre."; texteResultat.color = Color.yellow; }
+                if (texteGain     != null) { texteGain.text = "+ $" + gainPartiel + " (travail incomplet)"; texteGain.color = Color.yellow; }
             }
             else
             {
-                texteResultat.text = "⏰ Temps ecoule ! Voiture encore sale.";
-                texteResultat.color = Color.red;
-                texteGain.text = "Aucune recompense.";
-                texteGain.color = Color.gray;
+                if (texteResultat != null) { texteResultat.text = "Temps ecoule ! Voiture encore sale."; texteResultat.color = Color.red; }
+                if (texteGain     != null) { texteGain.text = "Aucune recompense."; texteGain.color = Color.gray; }
             }
         }
     }
 
     // -----------------------------------------------------------------------
-    void FermerPanneau()
+    public void FermerPanneau()
     {
         partieEnCours = false;
-        panneauLavage.SetActive(false);
+        estEnTrainDeFrotter = false;
+        if (epongeIcon != null) epongeIcon.gameObject.SetActive(false);
+        if (panneauLavage != null) panneauLavage.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         if (playerController != null) playerController.menuOuvert = false;
