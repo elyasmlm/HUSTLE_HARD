@@ -101,9 +101,34 @@ public class GameManager : MonoBehaviour
 
     // --- Folie ---
 
+    private bool folieMaxAtteinte = false;
+
     public void AjouterFolie(float montant)
     {
         folie = Mathf.Clamp(folie + montant, 0, folieMax);
+
+        if (folie >= folieMax && !folieMaxAtteinte)
+        {
+            folieMaxAtteinte = true;
+            StartCoroutine(MonologueFolieMax());
+        }
+    }
+
+    /// <summary>Remet la folie a zero (petit boulot, zdeh du crackhead...).</summary>
+    public void ResetFolie()
+    {
+        folie = 0f;
+        folieMaxAtteinte = false;
+    }
+
+    IEnumerator MonologueFolieMax()
+    {
+        // Laisse le temps au mini-jeu en cours de se fermer (folie max ferme la fenetre).
+        yield return new WaitForSeconds(0.5f);
+
+        if (SystemeDialogue.Instance != null)
+            SystemeDialogue.Instance.Afficher("...",
+                "Je deviens fou avec tous ces jeux d'argent... Il faut que je décompresse avec un travail classique ! Ou bien... autre chose...");
     }
 
     /// <summary>
@@ -161,6 +186,7 @@ public class GameManager : MonoBehaviour
         }
 
         folie = 0;
+        folieMaxAtteinte = false;
         enTrainDeFumer = false;
     }
 
@@ -232,20 +258,66 @@ public class GameManager : MonoBehaviour
         techniquesDisponibles++;
     }
 
+    // --- Indices de triche (declenches apres trop de defaites) ---
+
+    private int defaitesCombatCoq = 0;
+    private int defaitesBlackjack = 0;
+    private int defaitesRoulette  = 0;
+
+    private bool indiceCombatCoqVu = false;
+    private bool indiceBlackjackVu = false;
+    private bool indiceRouletteVu  = false;
+
+    /// <summary>Enregistre une defaite et retourne true la 1ere fois que le seuil d'indice est atteint.</summary>
+    public bool DefaiteCombatCoq()
+    {
+        defaitesCombatCoq++;
+        if (!indiceCombatCoqVu && defaitesCombatCoq >= 5)
+        {
+            indiceCombatCoqVu = true;
+            return true;
+        }
+        return false;
+    }
+
+    public bool DefaiteBlackjack()
+    {
+        defaitesBlackjack++;
+        if (!indiceBlackjackVu && defaitesBlackjack >= 5)
+        {
+            indiceBlackjackVu = true;
+            return true;
+        }
+        return false;
+    }
+
+    public bool DefaiteRoulette()
+    {
+        defaitesRoulette++;
+        if (!indiceRouletteVu && defaitesRoulette >= 2)
+        {
+            indiceRouletteVu = true;
+            return true;
+        }
+        return false;
+    }
+
     // --- Fin de partie ---
 
     void Victoire()
     {
         partieTerminee = true;
         Debug.Log("VICTOIRE !");
-        // TODO : afficher ecran de victoire
+        if (EcranFin.Instance != null) EcranFin.Instance.AfficherVictoire();
+        else Debug.LogWarning("[GameManager] Aucun EcranFin dans la scene ! Lance Tools > MenuGame > Create End Screens.");
     }
 
     void GameOver(string raison)
     {
         partieTerminee = true;
         Debug.Log("GAME OVER : " + raison);
-        // TODO : afficher ecran de game over
+        if (EcranFin.Instance != null) EcranFin.Instance.AfficherGameOver();
+        else Debug.LogWarning("[GameManager] Aucun EcranFin dans la scene ! Lance Tools > MenuGame > Create End Screens.");
     }
 
     // --- Gestion des scenes ---

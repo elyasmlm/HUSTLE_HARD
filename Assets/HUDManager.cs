@@ -16,6 +16,8 @@ public class HUDManager : MonoBehaviour
 
     [Header("Inventaire")]
     public TextMeshProUGUI texteInventaire;
+    [Tooltip("Panneau de l'inventaire, masque quand un ecran de jeu est ouvert.")]
+    public GameObject panneauInventaire;
 
     private float largeurMaxBarre = 200f;
 
@@ -23,12 +25,31 @@ public class HUDManager : MonoBehaviour
     private float tempsRestant = 1440f;
     private float folie = 35f;
 
+    void Start()
+    {
+        // Fallback : si le panneau n'est pas assigne, on prend le parent du texte.
+        if (panneauInventaire == null && texteInventaire != null)
+            panneauInventaire = texteInventaire.transform.parent.gameObject;
+    }
+
     void Update()
     {
         tempsRestant -= Time.deltaTime;
         if (tempsRestant < 0) tempsRestant = 0;
 
         MettreAJourHUD();
+        MettreAJourVisibiliteInventaire();
+    }
+
+    void MettreAJourVisibiliteInventaire()
+    {
+        if (panneauInventaire == null) return;
+
+        // Tous les panneaux de jeu (et le dialogue) liberent le curseur.
+        // On masque donc l'inventaire des que le curseur est visible.
+        bool ecranOuvert = Cursor.visible;
+        if (panneauInventaire.activeSelf == ecranOuvert)
+            panneauInventaire.SetActive(!ecranOuvert);
     }
 
     void MettreAJourHUD()

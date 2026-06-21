@@ -27,5 +27,11 @@ public class AchatViagra : MonoBehaviour
         GameManager.Instance.AjouterFolie(2f);
 
         Debug.Log("[AchatViagra] Viagra achete ! Stock : " + GameManager.Instance.viagra);
+
+        if (SystemeDialogue.Instance == null)
+            Debug.LogError("[AchatViagra] SystemeDialogue.Instance est NULL ! Lance Tools > Dialogue > Create UI in Scene dans CETTE scene.");
+        else
+            SystemeDialogue.Instance.Afficher("Le vendeur",
+                "Tiens... mais surtout, faudrait vraiment pas donner ça à un animal. Genre... une poule. Surtout pas.");
     }
 }

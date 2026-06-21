@@ -303,7 +303,7 @@ public class LavageVoiture : MonoBehaviour
             float ratio = tempsRestant / DUREE_MAX;
             int gain = Mathf.RoundToInt(Mathf.Lerp(GAIN_MIN, GAIN_MAX, ratio));
 
-            if (GameManager.Instance != null) GameManager.Instance.AjouterArgent(gain);
+            if (GameManager.Instance != null) { GameManager.Instance.AjouterArgent(gain); GameManager.Instance.ResetFolie(); }
             MettreAJourArgent();
 
             if (texteResultat != null) { texteResultat.text = "Voiture impeccable !"; texteResultat.color = Color.green; }

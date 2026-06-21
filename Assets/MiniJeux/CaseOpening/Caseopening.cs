@@ -129,8 +129,9 @@ public class CaseOpening : MonoBehaviour
     // -----------------------------------------------------------------------
     void Update()
     {
-        if (panneauCase != null && panneauCase.activeSelf && Input.GetKeyDown(KeyCode.Escape))
-            FermerPanneau();
+        if (panneauCase == null || !panneauCase.activeSelf) return;
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax) { FermerPanneau(); return; }
+        if (Input.GetKeyDown(KeyCode.Escape)) FermerPanneau();
     }
 
     // -----------------------------------------------------------------------

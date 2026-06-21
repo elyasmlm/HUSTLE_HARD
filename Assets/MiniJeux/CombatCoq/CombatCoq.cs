@@ -80,6 +80,8 @@ public class CombatCoq : MonoBehaviour
     {
         if (!panneauCombat.activeSelf) return;
 
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax) { FermerPanneau(); return; }
+
         if (Input.GetKeyDown(KeyCode.Escape))
             FermerPanneau();
     }
@@ -243,6 +245,7 @@ public class CombatCoq : MonoBehaviour
 
         texteResultat.text = "🏆 " + gagnant.nom + " remporte le combat !";
 
+        bool indiceTriche = false;
         if (joueurAGagne)
         {
             texteGainResultat.text = "GAGNÉ ! +" + gain + "$";
@@ -255,6 +258,7 @@ public class CombatCoq : MonoBehaviour
             texteGainResultat.text = "Perdu... -" + miseActuelle + "$";
             texteGainResultat.color = Color.red;
             GameManager.Instance.AjouterFolie(2f);
+            indiceTriche = GameManager.Instance.DefaiteCombatCoq();
         }
 
         texteArgentDisponible.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
@@ -264,6 +268,17 @@ public class CombatCoq : MonoBehaviour
         GameManager.Instance.ResetPouletDope(1);
         texteEffetCoqA.text = "";
         texteEffetCoqB.text = "";
+
+        // Trop de defaites : on ferme et le crackhead glisse un indice.
+        if (indiceTriche)
+        {
+            yield return new WaitForSeconds(1.5f);
+            FermerPanneau();
+            if (SystemeDialogue.Instance != null)
+                SystemeDialogue.Instance.Afficher("Le crackhead",
+                    "Eh psstt... si tu cherches bien dans la boutique, on pourrait trouver quelque chose pour que tu te mettes à gagner.");
+            yield break;
+        }
 
         boutonRejouer.gameObject.SetActive(true);
     }

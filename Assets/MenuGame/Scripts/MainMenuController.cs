@@ -30,6 +30,7 @@ namespace MenuGame
 
         public void OnPlayClicked()
         {
+            IntroAppel.ReinitialiserIntro();
             SceneManager.LoadScene(gameplaySceneName);
         }
 

@@ -28,6 +28,13 @@ public static class CreateInventaireHUDEditor
         if (hud == null)
             Debug.LogWarning("[Inventaire] Aucun HUDManager trouve : le panneau ne sera pas branche automatiquement.");
 
+        // Idempotent : supprime tout panneau d'inventaire existant pour eviter les doublons.
+        foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (t != null && t.name == "PanneauInventaire")
+                Undo.DestroyObjectImmediate(t.gameObject);
+        }
+
         // Panneau ancre en bas a gauche.
         var panel = new GameObject("PanneauInventaire", typeof(RectTransform), typeof(Image));
         panel.transform.SetParent(canvas.transform, false);
@@ -58,6 +65,7 @@ public static class CreateInventaireHUDEditor
         if (hud != null)
         {
             hud.texteInventaire = tmp;
+            hud.panneauInventaire = panel;
             EditorUtility.SetDirty(hud);
         }
 

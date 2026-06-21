@@ -77,8 +77,11 @@ public class InteractionSystem : MonoBehaviour
                 ObjetInteractif obj = objetCible.GetComponent<ObjetInteractif>();
                 PorteTransition porte = objetCible.GetComponent<PorteTransition>();
                 PouletScene poulet = objetCible.GetComponent<PouletScene>();
+                RamassageAimant aimantCache = objetCible.GetComponent<RamassageAimant>();
                 string nom;
-                if (porte != null && porte.nomAffichage != "")
+                if (aimantCache != null)
+                    nom = porte == null ? "Ramasser les aimants" : objetCible.name;
+                else if (porte != null && porte.nomAffichage != "")
                     nom = porte.nomAffichage;
                 else if (poulet != null)
                     nom = poulet.EstDope()
@@ -118,6 +121,20 @@ public class InteractionSystem : MonoBehaviour
             porte.Entrer();
             return;
         }
+
+        // Ramassage d'aimants caches
+        RamassageAimant aimant = objet.GetComponent<RamassageAimant>();
+        if (aimant != null)
+        {
+            aimant.Ramasser();
+            if (texteInteraction != null) texteInteraction.text = "";
+            return;
+        }
+
+        // Crackhead : detend si folie haute, sinon laisse le mini-jeu se lancer.
+        Crackhead crackhead = objet.GetComponent<Crackhead>();
+        if (crackhead != null && crackhead.TenterDetendre())
+            return;
 
         // Poulet dopable
         PouletScene poulet = objet.GetComponent<PouletScene>();
@@ -179,6 +196,15 @@ public class InteractionSystem : MonoBehaviour
             {
                 if (miniRoulette != null) miniRoulette.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] MiniRoulette non assign� dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("Soudoyer", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Soudoyer le croupier", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Pot-de-vin", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (blackjack != null) blackjack.SoudoyerCroupier();
+                else Debug.LogWarning("[InteractionSystem] Blackjack non assigne dans l'Inspector !");
                 return;
             }
 

@@ -79,8 +79,9 @@ public class TicketGrattage : MonoBehaviour
 
     void Update()
     {
-        if (panneauTicket != null && panneauTicket.activeSelf && Input.GetKeyDown(KeyCode.Escape))
-            FermerTicket();
+        if (panneauTicket == null || !panneauTicket.activeSelf) return;
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax) { FermerTicket(); return; }
+        if (Input.GetKeyDown(KeyCode.Escape)) FermerTicket();
     }
 
     // ── Ouverture / Fermeture ──────────────────────────────────────────────
