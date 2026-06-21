@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class InteractionSystem : MonoBehaviour
@@ -17,6 +17,9 @@ public class InteractionSystem : MonoBehaviour
     public MiniRoulette miniRoulette;
     public DAB dab;
     public AchatViagra achatViagra;
+    public CaseOpening caseOpening;
+    public LivreurPizza livreurPizza;
+    public LavageVoiture lavageVoiture;
 
     private Camera cam;
     private GameObject objetCible;
@@ -41,6 +44,12 @@ public class InteractionSystem : MonoBehaviour
             dab = Object.FindFirstObjectByType<DAB>();
         if (achatViagra == null)
             achatViagra = Object.FindFirstObjectByType<AchatViagra>();
+        if (caseOpening == null)
+            caseOpening = Object.FindFirstObjectByType<CaseOpening>();
+        if (livreurPizza == null)
+            livreurPizza = Object.FindFirstObjectByType<LivreurPizza>(FindObjectsInactive.Include);
+        if (lavageVoiture == null)
+            lavageVoiture = Object.FindFirstObjectByType<LavageVoiture>(FindObjectsInactive.Include);
     }
 
     void Update()
@@ -56,7 +65,7 @@ public class InteractionSystem : MonoBehaviour
     void DetecterObjet()
     {
         if (cam == null) cam = GetComponentInChildren<Camera>();
-        if (cam == null) { Debug.Log("CAM NULL"); return; }
+        if (cam == null) { Debug.LogError("[Interaction] CAM NULL sur " + gameObject.name); return; }
 
         Ray rayon = new Ray(cam.transform.position, cam.transform.forward);
         RaycastHit touche;
@@ -82,15 +91,22 @@ public class InteractionSystem : MonoBehaviour
                 else
                     nom = objetCible.name;
 
-                texteInteraction.text = poulet != null && !poulet.EstDope() && GameManager.Instance.viagra > 0
-                    ? nom
-                    : "[E] " + nom;
+                if (texteInteraction != null)
+                    texteInteraction.text = poulet != null && !poulet.EstDope() && GameManager.Instance.viagra > 0
+                        ? nom
+                        : "[E] " + nom;
                 return;
+            }
+            else
+            {
+                // Raycast touche qqch mais pas Interactable
+                Debug.Log("[Interaction] Raycast touche '" + touche.collider.gameObject.name
+                    + "' tag=" + touche.collider.tag + " (pas Interactable)");
             }
         }
 
         objetCible = null;
-        texteInteraction.text = "";
+        if (texteInteraction != null) texteInteraction.text = "";
     }
 
     void Interagir(GameObject objet)
@@ -135,7 +151,11 @@ public class InteractionSystem : MonoBehaviour
                 return;
             }
 
-            if (nom.Equals("TicketGrattage", System.StringComparison.OrdinalIgnoreCase))
+            if (nom.Equals("TicketGrattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Faire un grattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Grattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Ticket Grattage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Ticket de grattage", System.StringComparison.OrdinalIgnoreCase))
             {
                 if (ticketGrattage != null) ticketGrattage.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] TicketGrattage non assign� dans l'Inspector !");
@@ -179,6 +199,43 @@ public class InteractionSystem : MonoBehaviour
             {
                 if (dab != null) dab.OuvrirPanneau();
                 else Debug.LogWarning("[InteractionSystem] DAB non assigne dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("CaseOpening", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Case Opening", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Caisse", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("CaisseOpening", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (caseOpening != null) caseOpening.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] CaseOpening non assign� dans l'Inspector !");
+                return;
+            }
+
+            if (nom.Equals("LivreurPizza", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Livreur Pizza", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Livreur de Pizza", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Livraison", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Scooter", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Pizza", System.StringComparison.OrdinalIgnoreCase))
+            {
+                Debug.Log("[Interaction] Dispatch LivreurPizza – ref=" + (livreurPizza != null ? livreurPizza.name : "NULL"));
+                if (livreurPizza != null) livreurPizza.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] LivreurPizza non assigné ! Glissez le controller dans l'Inspector.");
+                return;
+            }
+
+            if (nom.Equals("LavageVoiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Lavage Voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Lavage de Voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Lavage", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("CarWash", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Nettoyeur de voiture", System.StringComparison.OrdinalIgnoreCase) ||
+                nom.Equals("Nettoyeur", System.StringComparison.OrdinalIgnoreCase))
+            {
+                if (lavageVoiture != null) lavageVoiture.OuvrirPanneau();
+                else Debug.LogWarning("[InteractionSystem] LavageVoiture non assigné ! Glissez le controller dans l'Inspector.");
                 return;
             }
 

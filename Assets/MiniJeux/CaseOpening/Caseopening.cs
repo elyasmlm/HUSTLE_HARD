@@ -7,7 +7,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Mini-jeu : Case Opening (inspire de CS:GO)
 /// Le joueur achete une caisse et obtient une arme d'une certaine rarete.
-/// Il peut ensuite vendre l'arme pour recuperer de l'argent.
+/// La valeur de l'arme est directement encaissee.
 ///
 /// Caisse normale      : 10$  - armes valant jusqu'a 100$
 /// Caisse supersonique : 20$  - armes valant jusqu'a 1000$
@@ -48,6 +48,8 @@ public class CaseOpening : MonoBehaviour
 
     [Header("Infos joueur")]
     public TextMeshProUGUI texteArgent;
+    public TextMeshProUGUI texteMultiplicateur;
+    public TextMeshProUGUI texteErreurCo;
 
     // --- Constantes ---
     private const int PRIX_CAISSE_NORMALE = 10;
@@ -112,19 +114,30 @@ public class CaseOpening : MonoBehaviour
     {
         playerController = Object.FindFirstObjectByType<PlayerController>();
 
-        boutonCaisseNormale.onClick.AddListener(() => AcheterCaisse(TypeCaisse.Normale));
-        boutonCaisseSupersonique.onClick.AddListener(() => AcheterCaisse(TypeCaisse.Supersonique));
-        boutonRejouer.onClick.AddListener(ResetChoix);
-        boutonFermer.onClick.AddListener(FermerPanneau);
+        if (boutonCaisseNormale != null)
+            boutonCaisseNormale.onClick.AddListener(() => AcheterCaisse(TypeCaisse.Normale));
+        if (boutonCaisseSupersonique != null)
+            boutonCaisseSupersonique.onClick.AddListener(() => AcheterCaisse(TypeCaisse.Supersonique));
+        if (boutonRejouer != null)
+            boutonRejouer.onClick.AddListener(ResetChoix);
+        if (boutonFermer != null)
+            boutonFermer.onClick.AddListener(FermerPanneau);
 
-        panneauCase.SetActive(false);
+        if (panneauCase != null) panneauCase.SetActive(false);
+    }
+
+    // -----------------------------------------------------------------------
+    void Update()
+    {
+        if (panneauCase != null && panneauCase.activeSelf && Input.GetKeyDown(KeyCode.Escape))
+            FermerPanneau();
     }
 
     // -----------------------------------------------------------------------
     public void OuvrirPanneau()
     {
         if (!GameManager.Instance.PeutJouer()) return;
-        panneauCase.SetActive(true);
+        if (panneauCase != null) panneauCase.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         if (playerController != null) playerController.menuOuvert = true;
@@ -136,21 +149,34 @@ public class CaseOpening : MonoBehaviour
     void ResetChoix()
     {
         derniereArme = null;
-        panneauAnimation.SetActive(false);
-        panneauResultat.SetActive(false);
+        if (panneauAnimation != null) panneauAnimation.SetActive(false);
+        if (panneauResultat != null)  panneauResultat.SetActive(false);
+        if (boutonRejouer != null)    boutonRejouer.gameObject.SetActive(false);
 
-        boutonCaisseNormale.interactable = GameManager.Instance.argent >= PRIX_CAISSE_NORMALE;
-        boutonCaisseSupersonique.interactable = GameManager.Instance.argent >= PRIX_CAISSE_SUPERSONIQUE;
+        if (boutonCaisseNormale != null)
+            boutonCaisseNormale.interactable = GameManager.Instance.argent >= PRIX_CAISSE_NORMALE;
+        if (boutonCaisseSupersonique != null)
+            boutonCaisseSupersonique.interactable = GameManager.Instance.argent >= PRIX_CAISSE_SUPERSONIQUE;
 
-        texteDescCaisseNormale.text = "Caisse Normale\n10$\nArmes jusqu'a 100$";
-        texteDescCaisseSupersonique.text = "Caisse Supersonique\n20$\nArmes jusqu'a 1 000$";
+        if (texteDescCaisseNormale != null)
+            texteDescCaisseNormale.text = "Caisse Normale\n$10 — jusqu'à 100$";
+        if (texteDescCaisseSupersonique != null)
+            texteDescCaisseSupersonique.text = "Caisse Supersonique\n$20 — jusqu'à 1 000$";
 
+        if (texteErreurCo != null) texteErreurCo.text = "";
         MettreAJourArgent();
     }
 
     void MettreAJourArgent()
     {
-        texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+        if (texteArgent != null)
+            texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+
+        if (texteMultiplicateur != null)
+        {
+            float m = GameManager.Instance.multiplicateurGain;
+            texteMultiplicateur.text = m > 1f ? "⚡ x" + m : "";
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -162,16 +188,27 @@ public class CaseOpening : MonoBehaviour
 
         if (GameManager.Instance.argent < prix)
         {
-            texteMessageResultat.text = "Pas assez d'argent !";
+            if (texteErreurCo != null)
+            {
+                texteErreurCo.text = "Argent insuffisant.";
+            }
+            else if (texteMessageResultat != null)
+            {
+                texteMessageResultat.text = "Pas assez d'argent !";
+            }
             return;
         }
+
+        if (texteErreurCo != null) texteErreurCo.text = "";
+        if (texteMessageResultat != null) texteMessageResultat.text = "";
+
 
         caisseChoisie = type;
         GameManager.Instance.RetirerArgent(prix);
         MettreAJourArgent();
 
-        boutonCaisseNormale.interactable = false;
-        boutonCaisseSupersonique.interactable = false;
+        if (boutonCaisseNormale != null)      boutonCaisseNormale.interactable = false;
+        if (boutonCaisseSupersonique != null) boutonCaisseSupersonique.interactable = false;
 
         StartCoroutine(AnimerOuverture());
     }
@@ -196,8 +233,15 @@ public class CaseOpening : MonoBehaviour
 
         while (elapsed < duree)
         {
-            string nomAleatoire = tousLesNoms[Random.Range(0, tousLesNoms.Count)];
-            texteDefilement.text = nomAleatoire;
+            // Choisir une rarete aleatoire pour la couleur de defilement
+            RareteArme rareteAnim = TirerRareteAnimation();
+            string[] nomsRar = nomsArmes[rareteAnim];
+            string nomAleatoire = nomsRar[Random.Range(0, nomsRar.Length)];
+            if (texteDefilement != null)
+            {
+                texteDefilement.text = nomAleatoire;
+                texteDefilement.color = CouleurRarete(rareteAnim);
+            }
 
             // Ralentissement progressif
             float ratio = elapsed / duree;
@@ -208,11 +252,15 @@ public class CaseOpening : MonoBehaviour
             elapsed += interval;
         }
 
-        // Afficher l'arme finale
-        texteDefilement.text = derniereArme.nom;
-        yield return new WaitForSeconds(0.4f);
+        // Afficher l'arme finale avec sa couleur
+        if (texteDefilement != null)
+        {
+            texteDefilement.text = derniereArme.nom;
+            texteDefilement.color = CouleurRarete(derniereArme.rarete);
+        }
+        yield return new WaitForSeconds(0.6f);
 
-        panneauAnimation.SetActive(false);
+        if (panneauAnimation != null) panneauAnimation.SetActive(false);
         AfficherResultat();
 
         enAnimation = false;
@@ -221,22 +269,32 @@ public class CaseOpening : MonoBehaviour
     // -----------------------------------------------------------------------
     void AfficherResultat()
     {
-        panneauResultat.SetActive(true);
+        if (panneauResultat != null) panneauResultat.SetActive(true);
 
-        texteNomArme.text = derniereArme.nom;
-        texteRareteArme.text = derniereArme.rarete.ToString().ToUpper();
-        texteRareteArme.color = CouleurRarete(derniereArme.rarete);
+        if (texteNomArme != null)    texteNomArme.text = "Arme : " + derniereArme.nom;
+        if (texteRareteArme != null)
+        {
+            texteRareteArme.text  = "Rareté : " + NomRarete(derniereArme.rarete);
+            texteRareteArme.color = CouleurRarete(derniereArme.rarete);
+        }
 
         // Gain automatique : la valeur de l'arme est directement ajoutee
+        float multi = GameManager.Instance.multiplicateurGain;
         float gainFinal = AppliquerMultiplicateur(derniereArme.valeur);
         GameManager.Instance.AjouterArgent(gainFinal);
         MettreAJourArgent();
 
-        texteValeurArme.text = "Valeur : $" + gainFinal.ToString("N0");
-        texteMessageResultat.text = "+ $" + gainFinal.ToString("N0") + " encaisse !";
-        texteMessageResultat.color = UnityEngine.Color.green;
+        if (texteValeurArme != null)
+            texteValeurArme.text = "Gain : $" + gainFinal.ToString("N0")
+                + (multi > 1f ? "  (x" + multi + " appliqué)" : "");
 
-        boutonRejouer.gameObject.SetActive(true);
+        if (texteMessageResultat != null)
+        {
+            texteMessageResultat.text  = "+ $" + gainFinal.ToString("N0") + " encaissé !  |  Folie +3";
+            texteMessageResultat.color = UnityEngine.Color.green;
+        }
+
+        if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(true);
 
         GameManager.Instance.AjouterFolie(3f);
         derniereArme = null;
@@ -287,6 +345,33 @@ public class CaseOpening : MonoBehaviour
         return liste;
     }
 
+    // Tirage rapide pour la couleur d'animation (sans impact sur le resultat reel)
+    RareteArme TirerRareteAnimation()
+    {
+        float r = Random.value;
+        float cumul = 0f;
+        foreach (var kvp in probas)
+        {
+            cumul += kvp.Value;
+            if (r < cumul) return kvp.Key;
+        }
+        return RareteArme.Normale;
+    }
+
+    string NomRarete(RareteArme r)
+    {
+        switch (r)
+        {
+            case RareteArme.Normale:    return "Normale";
+            case RareteArme.Rare:       return "Rare";
+            case RareteArme.Mythique:   return "Mythique";
+            case RareteArme.Legendaire: return "Légendaire";
+            case RareteArme.Antique:    return "Antique";
+            case RareteArme.ExtraRare:  return "★ Extra Rare";
+            default: return r.ToString();
+        }
+    }
+
     UnityEngine.Color CouleurRarete(RareteArme rarete)
     {
         switch (rarete)
@@ -304,7 +389,7 @@ public class CaseOpening : MonoBehaviour
     // -----------------------------------------------------------------------
     void FermerPanneau()
     {
-        panneauCase.SetActive(false);
+        if (panneauCase != null) panneauCase.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         if (playerController != null) playerController.menuOuvert = false;
