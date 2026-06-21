@@ -74,6 +74,13 @@ public class MiniRoulette : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------
+    void Update()
+    {
+        if (panneauRoulette == null || !panneauRoulette.activeSelf) return;
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax) FermerPanneau();
+    }
+
+    // -----------------------------------------------------------------------
     public void OuvrirPanneau()
     {
         // Bloquer si folie a 100%
@@ -251,11 +258,23 @@ public class MiniRoulette : MonoBehaviour
         AppliquerLot(lotTire);
         MettreAJourUI();
 
+        enRotation = false;
+
+        // Trop de defaites : Francis Mecano glisse un indice.
+        if (lotTire.type == TypeLot.Perdu && GameManager.Instance.DefaiteRoulette())
+        {
+            yield return new WaitForSeconds(1.5f);
+            FermerPanneau();
+            if (SystemeDialogue.Instance != null)
+                SystemeDialogue.Instance.Afficher("Francis Mécano",
+                    "Putain... j'ai fait tomber ma boîte d'aimants derrière une bagnole. Si tu les retrouves, ils sont à toi.");
+            yield break;
+        }
+
         // Afficher zone résultat + bouton nouveau tour
         if (zoneResultat  != null) zoneResultat.SetActive(true);
         if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(true);
 
-        enRotation = false;
         if (boutonTourner != null) boutonTourner.interactable = true;
     }
 

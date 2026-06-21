@@ -43,7 +43,6 @@ public class Blackjack : MonoBehaviour
     public Button boutonRester;
 
     [Header("Triche")]
-    public Button boutonSoudoyer;
     public TextMeshProUGUI texteProtectionsRestantes;
 
     [Header("Resultat")]
@@ -75,7 +74,6 @@ public class Blackjack : MonoBehaviour
         if (boutonConfirmerMise != null) boutonConfirmerMise.onClick.AddListener(CommencerPartie);
         if (boutonTirer       != null) boutonTirer.onClick.AddListener(Tirer);
         if (boutonRester      != null) boutonRester.onClick.AddListener(Rester);
-        if (boutonSoudoyer    != null) boutonSoudoyer.onClick.AddListener(SoudoyerCroupier);
         if (boutonRejouer     != null) boutonRejouer.onClick.AddListener(ResetPanneau);
         if (boutonFermer      != null) boutonFermer.onClick.AddListener(FermerPanneau);
 
@@ -86,6 +84,7 @@ public class Blackjack : MonoBehaviour
     void Update()
     {
         if (panneauBlackjack == null || !panneauBlackjack.activeSelf) return;
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax) { FermerPanneau(); return; }
         if (Input.GetKeyDown(KeyCode.Escape)) FermerPanneau();
     }
 
@@ -126,15 +125,13 @@ public class Blackjack : MonoBehaviour
     {
         if (texteArgent != null)
             texteArgent.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
-        if (boutonSoudoyer != null)
-            boutonSoudoyer.interactable = GameManager.Instance.argent >= COUT_SOUDOYER && partiesProtegees == 0;
     }
 
     void MettreAJourProtections()
     {
         if (texteProtectionsRestantes != null)
             texteProtectionsRestantes.text = partiesProtegees > 0
-                ? "🛡 " + partiesProtegees
+                ? "Croupier soudoyé - " + partiesProtegees + " partie(s) protégée(s)"
                 : "";
     }
 
@@ -252,6 +249,8 @@ public class Blackjack : MonoBehaviour
         AfficherMains(croupierCache: false);
         if (zoneResultat != null) zoneResultat.SetActive(true);
 
+        bool indiceTriche = false;
+
         switch (resultat)
         {
             case ResultatPartie.Blackjack:
@@ -274,21 +273,36 @@ public class Blackjack : MonoBehaviour
 
             case ResultatPartie.Bust:
                 if (texteResultat != null) { texteResultat.text = "💥 Bust ! Vous dépassez 21."; texteResultat.color = Color.red; }
-                AppliquerDefaite();
+                indiceTriche = AppliquerDefaite();
                 break;
 
             case ResultatPartie.Defaite:
                 if (texteResultat != null) { texteResultat.text = "❌ Perdu ! Le croupier gagne."; texteResultat.color = Color.red; }
-                AppliquerDefaite();
+                indiceTriche = AppliquerDefaite();
                 break;
         }
 
         MettreAJourArgent();
+
+        // Trop de defaites : le croupier glisse un indice.
+        if (indiceTriche)
+        {
+            yield return new WaitForSeconds(1.5f);
+            FermerPanneau();
+            if (SystemeDialogue.Instance != null)
+                SystemeDialogue.Instance.Afficher("Le croupier",
+                    "Un conseil... la prochaine fois, passe donc à droite de ma table avant de jouer. Ça t'éviterait de perdre autant.");
+            yield break;
+        }
+
         if (boutonRejouer != null) boutonRejouer.gameObject.SetActive(true);
     }
 
-    void AppliquerDefaite()
+    /// <summary>Applique la defaite. Retourne true si un indice de triche doit etre montre.</summary>
+    bool AppliquerDefaite()
     {
+        GameManager.Instance.AjouterFolie(5f);
+
         if (partiesProtegees > 0)
         {
             GameManager.Instance.AjouterArgent(miseActuelle);
@@ -296,14 +310,29 @@ public class Blackjack : MonoBehaviour
             if (texteResultat != null)
                 texteResultat.text += "\n🛡 Bouclier utilisé — mise remboursée !";
             MettreAJourProtections();
+            return false; // perte annulee : pas d'indice
         }
 
-        GameManager.Instance.AjouterFolie(5f);
+        return GameManager.Instance.DefaiteBlackjack();
     }
 
     // -----------------------------------------------------------------------
-    void SoudoyerCroupier()
+    /// <summary>
+    /// Soudoie le croupier. Appele depuis le cube "Soudoyer" en scene.
+    /// Retourne false si le joueur n'a pas assez d'argent ou est deja protege.
+    /// </summary>
+    public bool SoudoyerCroupier()
     {
+        if (partiesProtegees > 0)
+        {
+            if (texteErreurMise != null)
+            {
+                texteErreurMise.text = "Le croupier est deja soudoyé.";
+                texteErreurMise.color = Color.yellow;
+            }
+            return false;
+        }
+
         if (GameManager.Instance.argent < COUT_SOUDOYER)
         {
             if (texteErreurMise != null)
@@ -311,13 +340,12 @@ public class Blackjack : MonoBehaviour
                 texteErreurMise.text = "Il faut $" + COUT_SOUDOYER + " pour soudoyer le croupier !";
                 texteErreurMise.color = Color.red;
             }
-            return;
+            return false;
         }
 
         GameManager.Instance.RetirerArgent(COUT_SOUDOYER);
         partiesProtegees = PARTIES_PROTEGEES;
 
-        boutonSoudoyer.interactable = false;
         MettreAJourArgent();
         MettreAJourProtections();
 
@@ -328,6 +356,7 @@ public class Blackjack : MonoBehaviour
         }
 
         GameManager.Instance.AjouterFolie(8f);
+        return true;
     }
 
     // -----------------------------------------------------------------------

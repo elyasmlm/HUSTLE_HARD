@@ -219,21 +219,15 @@ public static class CreateBlackjackUIEditor
         btnRester.GetComponent<Button>().interactable = false;
         bj.boutonRester = btnRester.GetComponent<Button>();
 
-        // ── Zone Triche ───────────────────────────────────────────────────────
+        // ── Zone Triche (affichage du soudoiement, declenche par le cube "Soudoyer") ──
         var zoneTriche = CreateImagePanel(modalGO.transform, "ZoneTriche",
             new Color(0.12f, 0.10f, 0.05f, 1f),
             new Vector2(0.55f, 0.02f), new Vector2(0.97f, 0.09f));
         CreateBorder(zoneTriche.transform, BORDER_GOLD, 2f);
 
-        var btnSoudoyer = CreateButton(zoneTriche.transform, "BtnSoudoyer",
-            "💰  Soudoyer — 5000$",
-            BTN_GOLD, 18f, new Color(0.1f, 0.05f, 0f),
-            new Vector2(0.01f, 0.05f), new Vector2(0.74f, 0.95f));
-        bj.boutonSoudoyer = btnSoudoyer.GetComponent<Button>();
-
         var protectionsTxt = CreateTMP(zoneTriche.transform, "ProtectionsRestantes", "",
-            16f, TXT_YELLOW, TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
-        SetAnchors(protectionsTxt.GetComponent<RectTransform>(), 0.76f, 0.05f, 0.99f, 0.95f);
+            16f, TXT_YELLOW, TextAlignmentOptions.Center, FontStyles.Bold);
+        SetAnchors(protectionsTxt.GetComponent<RectTransform>(), 0.02f, 0.05f, 0.98f, 0.95f);
         bj.texteProtectionsRestantes = protectionsTxt.GetComponent<TextMeshProUGUI>();
 
         // ── Bouton Rejouer ────────────────────────────────────────────────────

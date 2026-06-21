@@ -104,16 +104,10 @@ public static class CreateCombatCoqUIEditor
             BTN_RED, 24f, TXT_WHITE, new Vector2(0.1f, 0.04f), new Vector2(0.9f, 0.22f));
         combatCoq.boutonMiserA = btnMiserA.GetComponent<Button>();
 
-        // Texte d'effet du coq A (energise)
         var effetA = CreateTMP(pA.transform, "EffetCoqA", "",
             24f, new Color(1f, 0.85f, 0f), TextAlignmentOptions.Center, FontStyles.Bold);
-        SetAnchors(effetA.GetComponent<RectTransform>(), 0.1f, 0.40f, 0.9f, 0.50f);
+        SetAnchors(effetA.GetComponent<RectTransform>(), 0.1f, 0.40f, 0.9f, 0.55f);
         combatCoq.texteEffetCoqA = effetA.GetComponent<TextMeshProUGUI>();
-
-        // Bouton boisson pour le coq A
-        var btnBoissA = CreateButton(pA.transform, "BtnBoissonsA", "Energiser",
-            BTN_GOLD, 18f, new Color(0.1f, 0.1f, 0.1f), new Vector2(0.1f, 0.67f), new Vector2(0.9f, 0.75f));
-        combatCoq.boutonBoisssonA = btnBoissA.GetComponent<Button>();
 
         // ── Coq B (droite) ────────────────────────────────────────────────
         var pB = CreateImagePanel(modalGO.transform, "PanneauCoqB", PANEL_COQ_B,
@@ -139,16 +133,10 @@ public static class CreateCombatCoqUIEditor
             BTN_DARK, 24f, TXT_WHITE, new Vector2(0.1f, 0.04f), new Vector2(0.9f, 0.22f));
         combatCoq.boutonMiserB = btnMiserB.GetComponent<Button>();
 
-        // Texte d'effet du coq B (energise)
         var effetB = CreateTMP(pB.transform, "EffetCoqB", "",
             24f, new Color(1f, 0.85f, 0f), TextAlignmentOptions.Center, FontStyles.Bold);
-        SetAnchors(effetB.GetComponent<RectTransform>(), 0.1f, 0.40f, 0.9f, 0.50f);
+        SetAnchors(effetB.GetComponent<RectTransform>(), 0.1f, 0.40f, 0.9f, 0.55f);
         combatCoq.texteEffetCoqB = effetB.GetComponent<TextMeshProUGUI>();
-
-        // Bouton boisson pour le coq B
-        var btnBoissB = CreateButton(pB.transform, "BtnBoissonsB", "Energiser",
-            BTN_GOLD, 18f, new Color(0.1f, 0.1f, 0.1f), new Vector2(0.1f, 0.67f), new Vector2(0.9f, 0.75f));
-        combatCoq.boutonBoissonB = btnBoissB.GetComponent<Button>();
 
         // ── VS ────────────────────────────────────────────────────────────
         var vs = CreateTMP(modalGO.transform, "VS", "VS",

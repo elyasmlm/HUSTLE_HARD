@@ -7,6 +7,7 @@ public class CoqData
     public string nom;
     public float cote;
     public bool energise;
+    public bool dope;
 
     public CoqData(string nom, float cote)
     {

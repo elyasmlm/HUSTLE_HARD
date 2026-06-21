@@ -19,7 +19,6 @@ public class CombatCoq : MonoBehaviour
     public TextMeshProUGUI texteCoteCoqA;
     public TextMeshProUGUI texteEffetCoqA;
     public Button boutonMiserA;
-    public Button boutonBoisssonA;
     public Image panneauCoqA;
 
     [Header("Coq B")]
@@ -27,7 +26,6 @@ public class CombatCoq : MonoBehaviour
     public TextMeshProUGUI texteCoteCoqB;
     public TextMeshProUGUI texteEffetCoqB;
     public Button boutonMiserB;
-    public Button boutonBoissonB;
     public Image panneauCoqB;
 
     [Header("Mise")]
@@ -69,8 +67,6 @@ public class CombatCoq : MonoBehaviour
 
         if (boutonMiserA != null) boutonMiserA.onClick.AddListener(() => ChoisirCoq(0));
         if (boutonMiserB != null) boutonMiserB.onClick.AddListener(() => ChoisirCoq(1));
-        if (boutonBoisssonA != null) boutonBoisssonA.onClick.AddListener(() => DonnerBoisson(0));
-        if (boutonBoissonB != null) boutonBoissonB.onClick.AddListener(() => DonnerBoisson(1));
         if (boutonLancer != null) boutonLancer.onClick.AddListener(LancerCombat);
         if (boutonRejouer != null) boutonRejouer.onClick.AddListener(NouvellePartie);
         if (boutonFermer != null) boutonFermer.onClick.AddListener(FermerPanneau);
@@ -83,6 +79,8 @@ public class CombatCoq : MonoBehaviour
     void Update()
     {
         if (!panneauCombat.activeSelf) return;
+
+        if (GameManager.Instance.folie >= GameManager.Instance.folieMax) { FermerPanneau(); return; }
 
         if (Input.GetKeyDown(KeyCode.Escape))
             FermerPanneau();
@@ -101,21 +99,27 @@ public class CombatCoq : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------
+    public const string NOM_COQ_A = "MasterPoulet";
+    public const string NOM_COQ_B = "PouletBraise";
+
     void NouvellePartie()
     {
         coqChoisi = -1;
         miseActuelle = 0;
 
-        coqA = GenererCoq("Coq Rouge");
-        coqB = GenererCoq("Coq Noir");
+        coqA = GenererCoq(NOM_COQ_A);
+        coqB = GenererCoq(NOM_COQ_B);
         NormaliserCotes();
+
+        coqA.dope = GameManager.Instance.EstPouletDope(0);
+        coqB.dope = GameManager.Instance.EstPouletDope(1);
 
         texteNomCoqA.text = coqA.nom;
         texteCoteCoqA.text = "x" + coqA.cote.ToString("F2");
-        texteEffetCoqA.text = "";
+        texteEffetCoqA.text = coqA.dope ? "DOPE !" : "";
         texteNomCoqB.text = coqB.nom;
         texteCoteCoqB.text = "x" + coqB.cote.ToString("F2");
-        texteEffetCoqB.text = "";
+        texteEffetCoqB.text = coqB.dope ? "DOPE !" : "";
 
         texteArgentDisponible.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
         texteErreurMise.text = "";
@@ -125,8 +129,6 @@ public class CombatCoq : MonoBehaviour
 
         boutonMiserA.interactable = true;
         boutonMiserB.interactable = true;
-        boutonBoisssonA.interactable = true;
-        boutonBoissonB.interactable = true;
         boutonLancer.interactable = false;
         boutonRejouer.gameObject.SetActive(false);
 
@@ -206,33 +208,6 @@ public class CombatCoq : MonoBehaviour
     }
 
     // -----------------------------------------------------------------------
-    void DonnerBoisson(int index)
-    {
-        if (!GameManager.Instance.UtiliserBoisson())
-        {
-            texteErreurMise.text = "Vous n'avez pas de boisson energisante !";
-            texteErreurMise.color = Color.red;
-            return;
-        }
-
-        if (index == 0)
-        {
-            coqA.energise = true;
-            texteEffetCoqA.text = "⚡ ENERGISE !";
-            boutonBoisssonA.interactable = false;
-        }
-        else
-        {
-            coqB.energise = true;
-            texteEffetCoqB.text = "⚡ ENERGISE !";
-            boutonBoissonB.interactable = false;
-        }
-
-        texteErreurMise.text = "";
-        GameManager.Instance.AjouterFolie(3f);
-    }
-
-    // -----------------------------------------------------------------------
     void LancerCombat()
     {
         if (!ValiderMise(out miseActuelle)) return;
@@ -270,6 +245,7 @@ public class CombatCoq : MonoBehaviour
 
         texteResultat.text = "🏆 " + gagnant.nom + " remporte le combat !";
 
+        bool indiceTriche = false;
         if (joueurAGagne)
         {
             texteGainResultat.text = "GAGNÉ ! +" + gain + "$";
@@ -282,15 +258,36 @@ public class CombatCoq : MonoBehaviour
             texteGainResultat.text = "Perdu... -" + miseActuelle + "$";
             texteGainResultat.color = Color.red;
             GameManager.Instance.AjouterFolie(2f);
+            indiceTriche = GameManager.Instance.DefaiteCombatCoq();
         }
 
         texteArgentDisponible.text = "Argent : $" + GameManager.Instance.argent.ToString("N0");
+
+        // Le dopage est consomme : les poulets redeviennent normaux apres le combat.
+        GameManager.Instance.ResetPouletDope(0);
+        GameManager.Instance.ResetPouletDope(1);
+        texteEffetCoqA.text = "";
+        texteEffetCoqB.text = "";
+
+        // Trop de defaites : on ferme et le crackhead glisse un indice.
+        if (indiceTriche)
+        {
+            yield return new WaitForSeconds(1.5f);
+            FermerPanneau();
+            if (SystemeDialogue.Instance != null)
+                SystemeDialogue.Instance.Afficher("Le crackhead",
+                    "Eh psstt... si tu cherches bien dans la boutique, on pourrait trouver quelque chose pour que tu te mettes à gagner.");
+            yield break;
+        }
+
         boutonRejouer.gameObject.SetActive(true);
     }
 
     // -----------------------------------------------------------------------
     int DeterminerVainqueur()
     {
+        if (coqA.dope && !coqB.dope) return 0;
+        if (coqB.dope && !coqA.dope) return 1;
         if (coqA.energise && !coqB.energise) return 0;
         if (coqB.energise && !coqA.energise) return 1;
 

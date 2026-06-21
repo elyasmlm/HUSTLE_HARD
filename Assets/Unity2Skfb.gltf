@@ -127,7 +127,7 @@
 	],
 	"images": [
 		{
-			"uri": "Assets/chicken/chicken-texture.jpg"
+			"uri": "chicken/chicken-texture.jpg"
 		}
 	],
 	"materials": [

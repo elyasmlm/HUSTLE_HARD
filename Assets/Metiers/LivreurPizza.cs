@@ -223,6 +223,7 @@ public class LivreurPizza : MonoBehaviour
             int gain = Mathf.RoundToInt(Mathf.Lerp(GAIN_MIN, GAIN_MAX, ratio));
 
             GameManager.Instance.AjouterArgent(gain);
+            GameManager.Instance.ResetFolie();
             MettreAJourArgent();
 
             texteResultat.text = "Pizza livree !";
